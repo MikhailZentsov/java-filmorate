@@ -2,7 +2,6 @@ package ru.yandex.practicum.filmorate.model;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import jakarta.validation.constraints.*;
 import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -11,6 +10,9 @@ import ru.yandex.practicum.filmorate.adapter.CustomDurationSerialize;
 import ru.yandex.practicum.filmorate.validator.FilmDurationConstraint;
 import ru.yandex.practicum.filmorate.validator.FilmReleaseDateConstraint;
 
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
 import java.time.Duration;
 import java.time.LocalDate;
 
