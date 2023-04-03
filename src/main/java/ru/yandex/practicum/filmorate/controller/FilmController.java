@@ -34,7 +34,6 @@ public class FilmController {
             id++;
             log.info("Фильм {} добавлен", film);
         }
-
         return film;
     }
 

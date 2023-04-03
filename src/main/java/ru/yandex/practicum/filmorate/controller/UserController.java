@@ -34,7 +34,6 @@ public class UserController {
             id++;
             log.info("Пользователь {} добавлен", user);
         }
-
         return user;
     }
 
@@ -49,7 +48,6 @@ public class UserController {
             log.warn("Такого пользователя не существует");
             throw new ValidationException(HttpStatus.BAD_REQUEST, "Такого пользователя не существует");
         }
-
         return user;
     }
 
