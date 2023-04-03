@@ -9,7 +9,6 @@ import javax.validation.ConstraintViolation;
 import javax.validation.Validation;
 import javax.validation.Validator;
 import javax.validation.ValidatorFactory;
-import java.time.Duration;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Set;
@@ -29,7 +28,7 @@ class FilmControllerTest {
                 .name("nisi eiusmod")
                 .description("adipisicing")
                 .releaseDate(LocalDate.of(1967, 3, 25))
-                .duration(Duration.ofMinutes(100))
+                .duration(100)
                 .build();
         ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
         validator = factory.getValidator();
@@ -142,19 +141,19 @@ class FilmControllerTest {
         assertEquals(0, violations.size(),
                 "Возникают ошибки с длительностью null");
 
-        film.setDuration(Duration.ofMinutes(100));
+        film.setDuration(1);
         violations = validator.validate(film);
         assertEquals(0, violations.size(),
                 "Возникают ошибки с положительной длительностью");
 
-        film.setDuration(Duration.ZERO);
+        film.setDuration(0);
         violations = validator.validate(film);
         assertEquals(1, violations.size(),
                 "Не возникают ошибки с длительностью ZERO");
         assertEquals(violations.iterator().next().getMessage(),
                 "Длительность не может быть отрицательной или нулевой");
 
-        film.setDuration(Duration.ofMinutes(100).negated());
+        film.setDuration(-1);
         violations = validator.validate(film);
         assertEquals(1, violations.size(),
                 "Не возникают ошибки с отрицательной длительностью");

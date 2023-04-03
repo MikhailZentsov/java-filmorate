@@ -45,7 +45,7 @@ public class FilmController {
             log.info("Фильм {} добавлен", film);
         } else {
             log.warn("Такого фильма не существует");
-            throw new ValidationException(HttpStatus.BAD_REQUEST, "Такого фильма не существует");
+            throw new ValidationException(HttpStatus.NOT_FOUND, "Такого фильма не существует");
         }
         return film;
     }

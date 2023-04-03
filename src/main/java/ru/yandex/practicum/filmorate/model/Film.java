@@ -1,19 +1,14 @@
 package ru.yandex.practicum.filmorate.model;
 
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-import ru.yandex.practicum.filmorate.adapter.CustomDurationDeserialize;
-import ru.yandex.practicum.filmorate.adapter.CustomDurationSerialize;
-import ru.yandex.practicum.filmorate.validator.FilmDurationConstraint;
 import ru.yandex.practicum.filmorate.validator.FilmReleaseDateConstraint;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Positive;
 import javax.validation.constraints.Size;
-import java.time.Duration;
 import java.time.LocalDate;
 
 
@@ -34,8 +29,6 @@ public class Film {
     @FilmReleaseDateConstraint(message = "Дата не может быть раньше создания первого фильма в истории")
     private LocalDate releaseDate;
 
-    @JsonSerialize(using = CustomDurationSerialize.class)
-    @JsonDeserialize(using = CustomDurationDeserialize.class)
-    @FilmDurationConstraint(message = "Длительность не может быть отрицательной или нулевой")
-    private Duration duration;
+    @Positive(message = "Длительность не может быть отрицательной или нулевой")
+    private Integer duration;
 }

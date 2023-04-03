@@ -47,7 +47,7 @@ public class UserController {
             log.info("Пользователь {} добавлен", user);
         } else {
             log.warn("Такого пользователя не существует");
-            throw new ValidationException(HttpStatus.BAD_REQUEST, "Такого пользователя не существует");
+            throw new ValidationException(HttpStatus.NOT_FOUND, "Такого пользователя не существует");
         }
         return user;
     }

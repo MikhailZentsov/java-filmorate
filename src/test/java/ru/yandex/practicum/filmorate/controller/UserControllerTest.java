@@ -111,11 +111,10 @@ class UserControllerTest {
 
         user.setLogin("   ");
         violations = validator.validate(user);
-        violations.iterator().next();
 
         assertEquals(2, violations.size(),
                 "Количество сообщений об ошибке отличается от корректного с пустым логином");
-        assertEquals(violations.iterator().next().getMessage(), "Логин не может быть пустым");
+        assertTrue(violations.stream().anyMatch(t -> t.getMessage().equals("Логин не может быть пустым")));
 
         user.setLogin("olo nlo");
         violations = validator.validate(user);
