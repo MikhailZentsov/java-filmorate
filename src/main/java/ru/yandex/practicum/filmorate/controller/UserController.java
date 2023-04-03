@@ -2,6 +2,7 @@ package ru.yandex.practicum.filmorate.controller;
 
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.controller.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
@@ -16,20 +17,22 @@ public class UserController {
     int id = 1;
 
     @GetMapping
-    public List<User> getFilms() {
+    public List<User> getUsers() {
         return new ArrayList<>(users.values());
     }
 
     @PostMapping
     @ResponseBody
-    public User addFilm(@Valid @RequestBody User user) {
+    public User addUser(@Valid @RequestBody User user) {
         if (users.containsKey(user.getId())) {
-            throw new ValidationException("Такой пользователь уже существует");
+            log.warn("Такой пользователь уже существует");
+            throw new ValidationException(HttpStatus.BAD_REQUEST, "Такой пользователь уже существует");
         } else {
             user.setId(id);
-            checkNameUser(user);
+            normalizeNameUser(user);
             users.put(id, user);
             id++;
+            log.info("Пользователь {} добавлен", user);
         }
 
         return user;
@@ -37,18 +40,21 @@ public class UserController {
 
     @PutMapping
     @ResponseBody
-    public User updateFilm(@Valid @RequestBody User user) {
+    public User updateUser(@Valid @RequestBody User user) {
         if (users.containsKey(user.getId())) {
+            normalizeNameUser(user);
             users.put(user.getId(), user);
+            log.info("Пользователь {} добавлен", user);
         } else {
-            throw new ValidationException("Такого пользователя не существует");
+            log.warn("Такого пользователя не существует");
+            throw new ValidationException(HttpStatus.BAD_REQUEST, "Такого пользователя не существует");
         }
 
         return user;
     }
 
-    private void checkNameUser(User user) {
-        if (user.getName() == null) {
+    private void normalizeNameUser(User user) {
+        if (user.getName() == null || user.getName().isBlank()) {
             user.setName(user.getLogin());
         }
     }

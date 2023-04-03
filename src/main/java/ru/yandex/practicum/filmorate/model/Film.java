@@ -3,6 +3,7 @@ package ru.yandex.practicum.filmorate.model;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import jakarta.validation.constraints.*;
+import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import ru.yandex.practicum.filmorate.adapter.CustomDurationDeserialize;
@@ -15,6 +16,7 @@ import java.time.LocalDate;
 
 
 @Data
+@Builder
 public class Film {
 
     @EqualsAndHashCode.Exclude
@@ -27,11 +29,11 @@ public class Film {
     @Size(max = 200, message = "Максимальная длина описания 200 символов")
     private String description;
 
-    @FilmReleaseDateConstraint
+    @FilmReleaseDateConstraint(message = "Дата не может быть раньше создания первого фильма в истории")
     private LocalDate releaseDate;
 
     @JsonSerialize(using = CustomDurationSerialize.class)
     @JsonDeserialize(using = CustomDurationDeserialize.class)
-    @FilmDurationConstraint
+    @FilmDurationConstraint(message = "Длительность не может быть отрицательной или нулевой")
     private Duration duration;
 }

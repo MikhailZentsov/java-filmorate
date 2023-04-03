@@ -9,6 +9,6 @@ public class FilmDurationConstraintValidator implements ConstraintValidator<Film
 
     @Override
     public boolean isValid(Duration duration, ConstraintValidatorContext constraintValidatorContext) {
-        return !duration.isZero();
+        return duration == null || !(duration.isNegative() | duration.isZero());
     }
 }

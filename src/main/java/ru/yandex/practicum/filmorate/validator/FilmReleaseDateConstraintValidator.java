@@ -9,6 +9,6 @@ public class FilmReleaseDateConstraintValidator implements ConstraintValidator<F
     private static final LocalDate MIN_RELEASE_DATE = LocalDate.of(1895, 12,28);
     @Override
     public boolean isValid(LocalDate releaseDate, ConstraintValidatorContext constraintValidatorContext) {
-        return releaseDate.isAfter(MIN_RELEASE_DATE) || releaseDate.isEqual(MIN_RELEASE_DATE);
+        return releaseDate == null || !releaseDate.isBefore(MIN_RELEASE_DATE);
     }
 }

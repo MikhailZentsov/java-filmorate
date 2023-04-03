@@ -2,6 +2,8 @@ package ru.yandex.practicum.filmorate.controller;
 
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.controller.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
@@ -24,11 +26,13 @@ public class FilmController {
     @ResponseBody
     public Film addFilm(@Valid @RequestBody Film film) {
         if (films.containsKey(film.getId())) {
-            throw new ValidationException("Такой фильм уже существует");
+            log.warn("Такой фильм уже существует");
+            throw new ValidationException(HttpStatus.BAD_REQUEST, "Такой фильм уже существует");
         } else {
             film.setId(id);
             films.put(film.getId(), film);
             id++;
+            log.info("Фильм {} добавлен", film);
         }
 
         return film;
@@ -39,11 +43,18 @@ public class FilmController {
     public Film updateFilm(@Valid @RequestBody Film film) {
         if(films.containsKey(film.getId())) {
             films.put(film.getId(), film);
+            log.info("Фильм {} добавлен", film);
         } else {
-            throw new ValidationException("Такого фильма не существует");
+            log.warn("Такого фильма не существует");
+            throw new ValidationException(HttpStatus.BAD_REQUEST, "Такого фильма не существует");
         }
 
-
         return film;
+    }
+
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public void handleValidationException(MethodArgumentNotValidException exception) {
+        throw new ValidationException(HttpStatus.BAD_REQUEST, exception.getMessage());
     }
 }
