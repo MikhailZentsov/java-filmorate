@@ -40,7 +40,7 @@ public class FilmController {
     @PutMapping
     @ResponseBody
     public Film updateFilm(@Valid @RequestBody Film film) {
-        if(films.containsKey(film.getId())) {
+        if (films.containsKey(film.getId())) {
             films.put(film.getId(), film);
             log.info("Фильм {} добавлен", film);
         } else {
