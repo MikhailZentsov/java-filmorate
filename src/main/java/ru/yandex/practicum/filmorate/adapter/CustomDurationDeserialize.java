@@ -16,6 +16,7 @@ public class CustomDurationDeserialize extends StdDeserializer<Duration> {
     public CustomDurationDeserialize(Class<Duration> duration) {
         super(duration);
     }
+
     @Override
     public Duration deserialize(JsonParser jsonParser, DeserializationContext deserializationContext) throws IOException {
         if (jsonParser.getLongValue() < 0) {
