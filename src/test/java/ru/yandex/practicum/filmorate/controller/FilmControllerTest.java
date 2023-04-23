@@ -4,6 +4,11 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.service.FilmService;
+import ru.yandex.practicum.filmorate.storage.FilmStorage;
+import ru.yandex.practicum.filmorate.storage.InMemoryFilmStorage;
+import ru.yandex.practicum.filmorate.storage.InMemoryUserStorage;
+import ru.yandex.practicum.filmorate.storage.UserStorage;
 
 import javax.validation.ConstraintViolation;
 import javax.validation.Validation;
@@ -18,18 +23,22 @@ import static org.junit.jupiter.api.Assertions.*;
 @SpringBootTest
 class FilmControllerTest {
     private static FilmController filmController;
+    public static UserStorage userStorage;
     private static Film film;
     private Validator validator;
 
     @BeforeEach
     void setUp() {
-        filmController = new FilmController();
-        film = Film.builder()
-                .name("nisi eiusmod")
-                .description("adipisicing")
-                .releaseDate(LocalDate.of(1967, 3, 25))
-                .duration(100)
-                .build();
+        FilmStorage filmStorage = new InMemoryFilmStorage();
+        userStorage = new InMemoryUserStorage();
+        filmController = new FilmController(new FilmService(filmStorage, userStorage));
+        film = new Film(
+                0
+                ,"nisi eiusmod"
+                ,"adipisicing"
+                ,LocalDate.of(1967, 3, 25)
+                ,100
+        );
         ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
         validator = factory.getValidator();
     }

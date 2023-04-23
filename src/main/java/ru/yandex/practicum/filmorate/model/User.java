@@ -1,7 +1,5 @@
 package ru.yandex.practicum.filmorate.model;
 
-import lombok.Builder;
-import lombok.EqualsAndHashCode;
 import ru.yandex.practicum.filmorate.validator.UserLoginConstraint;
 
 import javax.validation.constraints.Email;
@@ -9,12 +7,13 @@ import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Past;
 import java.time.LocalDate;
+import java.util.HashSet;
 import java.util.Objects;
+import java.util.Set;
 
-@Builder
 public class User {
-    @EqualsAndHashCode.Exclude
-    private int id;
+
+    private long id;
 
     @Email(regexp = "^[\\w-\\.]+@([\\w-]+\\.)+[\\w-]{2,4}$", message = "Email не корректный")
     private String email;
@@ -29,19 +28,22 @@ public class User {
     @Past(message = "Дата рождения не может быть больше текущей даты")
     private LocalDate birthday;
 
-    public User(int id, String email, String login, String name, LocalDate birthday) {
+    private Set<Long> friends;
+
+    public User(long id, String email, String login, String name, LocalDate birthday) {
         this.id = id;
         this.email = email;
         this.login = login;
         this.name = name;
         this.birthday = birthday;
+        this.friends = new HashSet<>();
     }
 
-    public int getId() {
+    public long getId() {
         return id;
     }
 
-    public void setId(int id) {
+    public void setId(long id) {
         this.id = id;
     }
 
@@ -75,6 +77,22 @@ public class User {
 
     public void setBirthday(LocalDate birthday) {
         this.birthday = birthday;
+    }
+
+    public Set<Long> getFriends() {
+        return friends;
+    }
+
+    public void setFriends(Set<Long> friends) {
+        this.friends = friends;
+    }
+
+    public void addFriend(Long id) {
+        friends.add(id);
+    }
+
+    public void removeFriend(Long id) {
+        friends.remove(id);
     }
 
     @Override

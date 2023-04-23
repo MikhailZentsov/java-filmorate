@@ -1,11 +1,10 @@
 package ru.yandex.practicum.filmorate.controller;
 
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.service.UserService;
 
 import javax.validation.Valid;
 import java.util.*;
@@ -14,53 +13,50 @@ import java.util.*;
 @RequestMapping("/users")
 @Slf4j
 public class UserController {
-    private final Map<Integer, User> users = new HashMap<>();
-    private int id = 1;
+    private final UserService userService;
+
+    @Autowired
+    public UserController(UserService userService) {
+        this.userService = userService;
+    }
 
     @GetMapping
     public List<User> getUsers() {
-        return new ArrayList<>(users.values());
+        return userService.getUsers();
     }
 
     @PostMapping
-    @ResponseBody
     public User addUser(@Valid @RequestBody User user) {
-        if (users.containsKey(user.getId())) {
-            log.warn("Такой пользователь уже существует");
-            throw new ValidationException(HttpStatus.BAD_REQUEST, "Такой пользователь уже существует");
-        } else {
-            user.setId(id);
-            normalizeNameUser(user);
-            users.put(id, user);
-            id++;
-            log.info("Пользователь {} добавлен", user);
-        }
-        return user;
+        return userService.addUser(user);
     }
 
     @PutMapping
-    @ResponseBody
     public User updateUser(@Valid @RequestBody User user) {
-        if (users.containsKey(user.getId())) {
-            normalizeNameUser(user);
-            users.put(user.getId(), user);
-            log.info("Пользователь {} добавлен", user);
-        } else {
-            log.warn("Такого пользователя не существует");
-            throw new ValidationException(HttpStatus.NOT_FOUND, "Такого пользователя не существует");
-        }
-        return user;
+        return userService.updateUser(user);
     }
 
-    private void normalizeNameUser(User user) {
-        if (user.getName() == null || user.getName().isBlank()) {
-            user.setName(user.getLogin());
-        }
+    @GetMapping("/{id}")
+    public User getUser(@PathVariable Long id) {
+        return userService.getUser(id);
     }
 
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    @ExceptionHandler(MethodArgumentNotValidException.class)
-    public void handleValidationException(MethodArgumentNotValidException exception) {
-        throw new ValidationException(HttpStatus.BAD_REQUEST, exception.getMessage());
+    @PutMapping("/{id}/friends/{friendId}")
+    public List<User> addFriend(@PathVariable Long id, @PathVariable Long friendId) {
+        return userService.addFriend(id, friendId);
+    }
+
+    @DeleteMapping("/{id}/friends/{friendId}")
+    public List<User> removeFriend(@PathVariable Long id, @PathVariable Long friendId) {
+        return userService.removeFriend(id, friendId);
+    }
+
+    @GetMapping("/{id}/friends")
+    public List<User> getFriends(@PathVariable Long id) {
+        return userService.getFriends(id);
+    }
+
+    @GetMapping("/{id}/friends/common/{otherId}")
+    public List<User> getCommonFriends(@PathVariable Long id, @PathVariable Long otherId) {
+        return userService.getCommonFriends(id, otherId);
     }
 }
