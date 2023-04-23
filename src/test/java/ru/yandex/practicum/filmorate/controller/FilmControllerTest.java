@@ -33,11 +33,11 @@ class FilmControllerTest {
         userStorage = new InMemoryUserStorage();
         filmController = new FilmController(new FilmService(filmStorage, userStorage));
         film = new Film(
-                0
-                ,"nisi eiusmod"
-                ,"adipisicing"
-                ,LocalDate.of(1967, 3, 25)
-                ,100
+                0,
+                "nisi eiusmod",
+                "adipisicing",
+                LocalDate.of(1967, 3, 25),
+                100
         );
         ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
         validator = factory.getValidator();
@@ -92,22 +92,22 @@ class FilmControllerTest {
 
         film.setDescription(
                 "1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890" +
-                "123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789");
+                        "123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789");
         violations = validator.validate(film);
         assertEquals(0, violations.size(),
                 "Возникают ошибки с описанием длинной 199");
 
         film.setDescription(
                 "1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890" +
-                "1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890");
+                        "1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890");
         violations = validator.validate(film);
         assertEquals(0, violations.size(),
                 "Возникают ошибки с описанием длинной 200");
 
         film.setDescription(
                 "1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890" +
-                "1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890" +
-                "1");
+                        "1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890" +
+                        "1");
         violations = validator.validate(film);
         assertEquals(1, violations.size(),
                 "Не возникают ошибки с описанием длинной 201");
@@ -116,9 +116,9 @@ class FilmControllerTest {
 
     @Test
     void shouldNotAddTooOldFilm() {
-        final LocalDate MIN_RELEASE_DATE = LocalDate.of(1895, 12,28);
-        final LocalDate LESS_THEN_MIN_RELEASE_DATE = LocalDate.of(1895, 12,27);
-        final LocalDate RIGHT_RELEASE_DATE = LocalDate.of(1895, 12,29);
+        final LocalDate MIN_RELEASE_DATE = LocalDate.of(1895, 12, 28);
+        final LocalDate LESS_THEN_MIN_RELEASE_DATE = LocalDate.of(1895, 12, 27);
+        final LocalDate RIGHT_RELEASE_DATE = LocalDate.of(1895, 12, 29);
 
         film.setReleaseDate(null);
         Set<ConstraintViolation<Film>> violations = validator.validate(film);

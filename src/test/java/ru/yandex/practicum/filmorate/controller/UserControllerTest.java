@@ -26,11 +26,11 @@ class UserControllerTest {
     void setUp() {
         userController = new UserController(new UserService(new InMemoryUserStorage()));
         user = new User(
-                1
-                ,"dolore"
-                ,"Nick Name"
-                ,"mail@mail.ru"
-                ,LocalDate.of(1946, 8, 20)
+                1,
+                "dolore",
+                "Nick Name",
+                "mail@mail.ru",
+                LocalDate.of(1946, 8, 20)
         );
         ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
         validator = factory.getValidator();
