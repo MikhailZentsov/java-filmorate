@@ -80,7 +80,7 @@ public class User {
     }
 
     public Set<Long> getFriends() {
-        return friends;
+        return new HashSet<>(friends);
     }
 
     public void setFriends(Set<Long> friends) {
