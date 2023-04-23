@@ -30,7 +30,7 @@ public class User {
 
     private Set<Long> friends;
 
-    public User(long id, String email, String login, String name, LocalDate birthday) {
+    public User(long id, String login, String name, String email, LocalDate birthday) {
         this.id = id;
         this.email = email;
         this.login = login;
