@@ -4,6 +4,11 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.service.InMemoryFilmService;
+import ru.yandex.practicum.filmorate.storage.FilmStorage;
+import ru.yandex.practicum.filmorate.storage.InMemoryFilmStorage;
+import ru.yandex.practicum.filmorate.storage.InMemoryUserStorage;
+import ru.yandex.practicum.filmorate.storage.UserStorage;
 
 import javax.validation.ConstraintViolation;
 import javax.validation.Validation;
@@ -13,23 +18,27 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Set;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @SpringBootTest
 class FilmControllerTest {
     private static FilmController filmController;
+    public static UserStorage userStorage;
     private static Film film;
     private Validator validator;
 
     @BeforeEach
     void setUp() {
-        filmController = new FilmController();
-        film = Film.builder()
-                .name("nisi eiusmod")
-                .description("adipisicing")
-                .releaseDate(LocalDate.of(1967, 3, 25))
-                .duration(100)
-                .build();
+        FilmStorage filmStorage = new InMemoryFilmStorage();
+        userStorage = new InMemoryUserStorage();
+        filmController = new FilmController(new InMemoryFilmService(filmStorage, userStorage));
+        film = new Film(
+                0,
+                "nisi eiusmod",
+                "adipisicing",
+                LocalDate.of(1967, 3, 25),
+                100
+        );
         ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
         validator = factory.getValidator();
     }
@@ -83,22 +92,22 @@ class FilmControllerTest {
 
         film.setDescription(
                 "1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890" +
-                "123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789");
+                        "123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789");
         violations = validator.validate(film);
         assertEquals(0, violations.size(),
                 "Возникают ошибки с описанием длинной 199");
 
         film.setDescription(
                 "1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890" +
-                "1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890");
+                        "1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890");
         violations = validator.validate(film);
         assertEquals(0, violations.size(),
                 "Возникают ошибки с описанием длинной 200");
 
         film.setDescription(
                 "1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890" +
-                "1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890" +
-                "1");
+                        "1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890" +
+                        "1");
         violations = validator.validate(film);
         assertEquals(1, violations.size(),
                 "Не возникают ошибки с описанием длинной 201");
@@ -107,9 +116,9 @@ class FilmControllerTest {
 
     @Test
     void shouldNotAddTooOldFilm() {
-        final LocalDate MIN_RELEASE_DATE = LocalDate.of(1895, 12,28);
-        final LocalDate LESS_THEN_MIN_RELEASE_DATE = LocalDate.of(1895, 12,27);
-        final LocalDate RIGHT_RELEASE_DATE = LocalDate.of(1895, 12,29);
+        final LocalDate MIN_RELEASE_DATE = LocalDate.of(1895, 12, 28);
+        final LocalDate LESS_THEN_MIN_RELEASE_DATE = LocalDate.of(1895, 12, 27);
+        final LocalDate RIGHT_RELEASE_DATE = LocalDate.of(1895, 12, 29);
 
         film.setReleaseDate(null);
         Set<ConstraintViolation<Film>> violations = validator.validate(film);

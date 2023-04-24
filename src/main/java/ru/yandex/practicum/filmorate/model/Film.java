@@ -1,7 +1,5 @@
 package ru.yandex.practicum.filmorate.model;
 
-import lombok.Builder;
-import lombok.EqualsAndHashCode;
 import ru.yandex.practicum.filmorate.validator.FilmReleaseDateConstraint;
 
 import javax.validation.constraints.NotBlank;
@@ -9,14 +7,14 @@ import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Positive;
 import javax.validation.constraints.Size;
 import java.time.LocalDate;
+import java.util.HashSet;
 import java.util.Objects;
+import java.util.Set;
 
 
-@Builder
 public class Film {
 
-    @EqualsAndHashCode.Exclude
-    private int id;
+    private long id;
 
     @NotNull(message = "Название не может быть пустым")
     @NotBlank(message = "Название не может быть пустым")
@@ -31,19 +29,22 @@ public class Film {
     @Positive(message = "Длительность не может быть отрицательной или нулевой")
     private Integer duration;
 
-    public Film(int id, String name, String description, LocalDate releaseDate, Integer duration) {
+    private Set<Long> likes;
+
+    public Film(long id, String name, String description, LocalDate releaseDate, Integer duration) {
         this.id = id;
         this.name = name;
         this.description = description;
         this.releaseDate = releaseDate;
         this.duration = duration;
+        this.likes = new HashSet<>();
     }
 
-    public int getId() {
+    public long getId() {
         return id;
     }
 
-    public void setId(int id) {
+    public void setId(long id) {
         this.id = id;
     }
 
@@ -77,6 +78,22 @@ public class Film {
 
     public void setDuration(Integer duration) {
         this.duration = duration;
+    }
+
+    public Set<Long> getLikes() {
+        return likes;
+    }
+
+    public void setLikes(Set<Long> likes) {
+        this.likes = likes;
+    }
+
+    public void addLike(Long id) {
+        likes.add(id);
+    }
+
+    public void removeLike(Long id) {
+        likes.remove(id);
     }
 
     @Override

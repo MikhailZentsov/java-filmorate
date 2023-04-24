@@ -3,6 +3,8 @@ package ru.yandex.practicum.filmorate.controller;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.service.InMemoryUserService;
+import ru.yandex.practicum.filmorate.storage.InMemoryUserStorage;
 
 import javax.validation.ConstraintViolation;
 import javax.validation.Validation;
@@ -12,7 +14,9 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Set;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 
 class UserControllerTest {
 
@@ -22,14 +26,14 @@ class UserControllerTest {
 
     @BeforeEach
     void setUp() {
-        userController = new UserController();
-        user = User.builder()
-                .id(1)
-                .login("dolore")
-                .name("Nick Name")
-                .email("mail@mail.ru")
-                .birthday(LocalDate.of(1946, 8, 20))
-                .build();
+        userController = new UserController(new InMemoryUserService(new InMemoryUserStorage()));
+        user = new User(
+                1,
+                "dolore",
+                "Nick Name",
+                "mail@mail.ru",
+                LocalDate.of(1946, 8, 20)
+        );
         ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
         validator = factory.getValidator();
     }
