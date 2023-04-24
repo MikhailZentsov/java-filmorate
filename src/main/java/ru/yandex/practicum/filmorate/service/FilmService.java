@@ -1,65 +1,21 @@
 package ru.yandex.practicum.filmorate.service;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.model.User;
-import ru.yandex.practicum.filmorate.storage.FilmStorage;
-import ru.yandex.practicum.filmorate.storage.UserStorage;
 
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.List;
 
-@Service
-public class FilmService {
-    private final FilmStorage filmStorage;
-    private final UserStorage userStorage;
+public interface FilmService {
+    List<Film> getFilms();
 
-    @Autowired
-    public FilmService(FilmStorage filmStorage, UserStorage userStorage) {
-        this.filmStorage = filmStorage;
-        this.userStorage = userStorage;
-    }
+    Film getFilm(Long id);
 
-    public List<Film> getFilms() {
-        return filmStorage.getFilms();
-    }
+    Film addFilm(Film film);
 
-    public Film getFilm(Long id) {
-        return filmStorage.getFilm(id);
-    }
+    Film updateFilm(Film film);
 
-    public Film addFilm(Film film) {
-        return filmStorage.addFilm(film);
-    }
+    List<Film> getTopFilms(Long count);
 
-    public Film updateFilm(Film film) {
-        return filmStorage.updateFilm(film);
-    }
+    Film addLike(Long idFilm, Long idUser);
 
-    public List<Film> getTopFilms(Long count) {
-        if (count == null) {
-            count = 10L;
-        }
-        return filmStorage.getFilms().stream()
-                .sorted(Collections.reverseOrder(Comparator.comparingInt(film -> film.getLikes().size())))
-                .limit(count)
-                .collect(Collectors.toList());
-    }
-
-    public Film addLike(Long idFilm, Long idUser) {
-        User user = userStorage.getUser(idUser);
-        Film film = filmStorage.getFilm(idFilm);
-        film.addLike(user.getId());
-
-        return film;
-    }
-
-    public Film removeLike(Long idFilm, Long idUser) {
-        User user = userStorage.getUser(idUser);
-        Film film = filmStorage.getFilm(idFilm);
-        film.removeLike(user.getId());
-
-        return film;
-    }
+    Film removeLike(Long idFilm, Long idUser);
 }
