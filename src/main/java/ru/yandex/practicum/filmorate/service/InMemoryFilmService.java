@@ -41,7 +41,7 @@ public class InMemoryFilmService implements FilmService {
 
     @Override
     public List<Film> getTopFilms(Long count) {
-            if (count == null) {
+        if (count == null) {
             count = 10L;
         }
         return filmStorage.getFilms().stream()
