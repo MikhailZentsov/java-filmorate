@@ -6,6 +6,7 @@ import ru.yandex.practicum.filmorate.storage.UserStorage;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -35,30 +36,33 @@ public class InMemoryUserService implements UserService {
 
     public List<User> getFriends(Long id) {
         User user = userStorage.getUser(id);
-        return user.getFriends().stream()
-                .map(userStorage::getUser)
+        return user.getFriends().entrySet().stream()
+                .filter(Map.Entry::getValue)
+                .map(Map.Entry::getKey)
                 .collect(Collectors.toList());
     }
 
     public List<User> addFriend(Long idUser, Long idFriend) {
         User user = userStorage.getUser(idUser);
         User friend = userStorage.getUser(idFriend);
-        user.addFriend(idFriend);
-        friend.addFriend(idUser);
+        user.getFriends().put(friend, true);
+        friend.getFriends().put(user, true);
 
-        return user.getFriends().stream()
-                .map(userStorage::getUser)
+        return user.getFriends().entrySet().stream()
+                .filter(Map.Entry::getValue)
+                .map(Map.Entry::getKey)
                 .collect(Collectors.toList());
     }
 
     public List<User> removeFriend(Long idUser, Long idFriend) {
         User user = userStorage.getUser(idUser);
         User friend = userStorage.getUser(idFriend);
-        user.removeFriend(idFriend);
-        friend.removeFriend(idUser);
+        user.getFriends().remove(friend);
+        friend.getFriends().remove(user);
 
-        return user.getFriends().stream()
-                .map(userStorage::getUser)
+        return user.getFriends().entrySet().stream()
+                .filter(Map.Entry::getValue)
+                .map(Map.Entry::getKey)
                 .collect(Collectors.toList());
     }
 
@@ -66,16 +70,22 @@ public class InMemoryUserService implements UserService {
         User user = userStorage.getUser(idUser);
         User friend = userStorage.getUser(idFriend);
 
-        if (user.getFriends() == null || friend.getFriends() == null) {
+        Set<User> userFriends = user.getFriends().entrySet().stream()
+                .filter(Map.Entry::getValue)
+                .map(Map.Entry::getKey)
+                .collect(Collectors.toSet());
+
+        Set<User> friendFriends = friend.getFriends().entrySet().stream()
+                .filter(Map.Entry::getValue)
+                .map(Map.Entry::getKey)
+                .collect(Collectors.toSet());
+
+        if (userFriends.isEmpty() || friendFriends.isEmpty()) {
             return new ArrayList<>();
         }
 
-        Set<Long> userFriends = user.getFriends();
-        Set<Long> friendFriends = friend.getFriends();
         userFriends.retainAll(friendFriends);
 
-        return userFriends.stream()
-                .map(userStorage::getUser)
-                .collect(Collectors.toList());
+        return new ArrayList<>(userFriends);
     }
 }

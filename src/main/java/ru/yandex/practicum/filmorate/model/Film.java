@@ -29,6 +29,10 @@ public class Film {
     @Positive(message = "Длительность не может быть отрицательной или нулевой")
     private Integer duration;
 
+    private Rating mpa;
+
+    private Set<Genre> genres;
+
     private Set<Long> likes;
 
     public Film(long id, String name, String description, LocalDate releaseDate, Integer duration) {
@@ -37,6 +41,7 @@ public class Film {
         this.description = description;
         this.releaseDate = releaseDate;
         this.duration = duration;
+        this.genres = new HashSet<>();
         this.likes = new HashSet<>();
     }
 
@@ -88,12 +93,20 @@ public class Film {
         this.likes = likes;
     }
 
-    public void addLike(Long id) {
-        likes.add(id);
+    public Rating getMpa() {
+        return mpa;
     }
 
-    public void removeLike(Long id) {
-        likes.remove(id);
+    public void setMpa(Rating mpa) {
+        this.mpa = mpa;
+    }
+
+    public Set<Genre> getGenres() {
+        return genres;
+    }
+
+    public void setGenres(Set<Genre> genres) {
+        this.genres = genres;
     }
 
     @Override

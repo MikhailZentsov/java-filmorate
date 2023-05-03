@@ -7,9 +7,9 @@ import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Past;
 import java.time.LocalDate;
-import java.util.HashSet;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
-import java.util.Set;
 
 public class User {
 
@@ -28,7 +28,7 @@ public class User {
     @Past(message = "Дата рождения не может быть больше текущей даты")
     private LocalDate birthday;
 
-    private Set<Long> friends;
+    private Map<User, Boolean> friends;
 
     public User(long id, String login, String name, String email, LocalDate birthday) {
         this.id = id;
@@ -36,7 +36,7 @@ public class User {
         this.login = login;
         this.name = name;
         this.birthday = birthday;
-        this.friends = new HashSet<>();
+        this.friends = new HashMap<>();
     }
 
     public long getId() {
@@ -79,20 +79,12 @@ public class User {
         this.birthday = birthday;
     }
 
-    public Set<Long> getFriends() {
-        return new HashSet<>(friends);
+    public Map<User, Boolean> getFriends() {
+        return friends;
     }
 
-    public void setFriends(Set<Long> friends) {
+    public void setFriends(Map<User, Boolean> friends) {
         this.friends = friends;
-    }
-
-    public void addFriend(Long id) {
-        friends.add(id);
-    }
-
-    public void removeFriend(Long id) {
-        friends.remove(id);
     }
 
     @Override

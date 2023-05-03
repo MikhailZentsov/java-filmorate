@@ -54,7 +54,7 @@ public class InMemoryFilmService implements FilmService {
     public Film addLike(Long idFilm, Long idUser) {
         User user = userStorage.getUser(idUser);
         Film film = filmStorage.getFilm(idFilm);
-        film.addLike(user.getId());
+        film.getLikes().add(user.getId());
 
         return film;
     }
@@ -63,7 +63,7 @@ public class InMemoryFilmService implements FilmService {
     public Film removeLike(Long idFilm, Long idUser) {
         User user = userStorage.getUser(idUser);
         Film film = filmStorage.getFilm(idFilm);
-        film.removeLike(user.getId());
+        film.getLikes().remove(user.getId());
 
         return film;
     }
