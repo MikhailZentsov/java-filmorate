@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import ru.yandex.practicum.filmorate.validator.UserLoginConstraint;
 
 import javax.validation.constraints.Email;
@@ -7,10 +8,9 @@ import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Past;
 import java.time.LocalDate;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 
+@JsonIgnoreProperties(value = {"friends"})
 public class User {
 
     private long id;
@@ -28,7 +28,10 @@ public class User {
     @Past(message = "Дата рождения не может быть больше текущей даты")
     private LocalDate birthday;
 
-    private Map<User, Boolean> friends;
+    private Set<Long> friends;
+    public User() {
+        this.friends = new LinkedHashSet<>();
+    }
 
     public User(long id, String login, String name, String email, LocalDate birthday) {
         this.id = id;
@@ -36,7 +39,7 @@ public class User {
         this.login = login;
         this.name = name;
         this.birthday = birthday;
-        this.friends = new HashMap<>();
+        this.friends = new LinkedHashSet<>();
     }
 
     public long getId() {
@@ -79,12 +82,23 @@ public class User {
         this.birthday = birthday;
     }
 
-    public Map<User, Boolean> getFriends() {
+    public Set<Long> getFriends() {
         return friends;
     }
 
-    public void setFriends(Map<User, Boolean> friends) {
+    public void setFriends(Set<Long> friends) {
         this.friends = friends;
+    }
+
+    public Map<String, Object> toMap() {
+        Map<String, Object> values = new HashMap<>();
+        values.put("USER_ID", id);
+        values.put("EMAIL", email);
+        values.put("LOGIN", login);
+        values.put("USER_NAME", name);
+        values.put("BIRTHDAY", birthday);
+
+        return values;
     }
 
     @Override
