@@ -32,7 +32,7 @@ public enum Genre {
     @JsonCreator
     public static Genre forValues(@JsonProperty("id")int id) {
         for (Genre genre : Genre.values()) {
-            if (genre.id == id ) {
+            if (genre.id == id) {
                 return genre;
             }
         }
