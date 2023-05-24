@@ -28,6 +28,13 @@ public enum Mpa {
         return id;
     }
 
-    @JsonCreator
-    public static Mpa forValues(@JsonProperty("id") int id){        for (Mpa mpa : Mpa.values()){            if (mpa.id == id){                return mpa;            }}return null;}
+    @JsonCreator()
+    public static Mpa forValues(@JsonProperty("id") int id) {
+        for (Mpa mpa : Mpa.values()) {
+            if (mpa.id == id) {
+                return mpa;
+            }
+        }
+        return null;
+    }
 }
