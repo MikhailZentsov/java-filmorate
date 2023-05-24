@@ -4,6 +4,8 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import java.util.Arrays;
+
 @JsonFormat(shape = JsonFormat.Shape.OBJECT)
 public enum Mpa {
     G(1, "G"),
@@ -30,11 +32,9 @@ public enum Mpa {
 
     @JsonCreator()
     public static Mpa forValues(@JsonProperty("id") int id) {
-        for (Mpa mpa : Mpa.values()) {
-            if (mpa.id == id) {
-                return mpa;
-            }
-        }
-        return null;
+        return Arrays.stream(Mpa.values())
+                .filter(mpa -> mpa.id == id)
+                .findFirst()
+                .orElse(null);
     }
 }
