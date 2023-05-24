@@ -1,4 +1,4 @@
-package ru.yandex.practicum.filmorate.service.impl.bd;
+package ru.yandex.practicum.filmorate.service.impl.impl;
 
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;

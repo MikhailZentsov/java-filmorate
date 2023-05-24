@@ -1,6 +1,6 @@
-create table if not exists PUBLIC.RATINGS
+create table if not exists PUBLIC.ratings
 (
-    RATING_ID   INTEGER auto_increment
+    rating_id   INTEGER auto_increment
         primary key,
     RATING_NAME CHARACTER VARYING(10)
 );

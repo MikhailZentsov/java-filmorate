@@ -13,4 +13,10 @@ public interface UserStorage {
     Optional<User> addUser(User user);
 
     Optional<User> updateUser(User user);
+
+    Optional<List<User>> getFriends(Long id);
+
+    Optional<List<User>> addFriend(Long idUser, Long idFriend);
+
+    Optional<List<User>> removeFriend(Long idUser, Long idFriend);
 }

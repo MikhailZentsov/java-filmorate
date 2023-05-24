@@ -1,4 +1,4 @@
-package ru.yandex.practicum.filmorate.service.impl.memory;
+package ru.yandex.practicum.filmorate.service.impl.impl;
 
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
@@ -14,13 +14,13 @@ import ru.yandex.practicum.filmorate.storage.UserStorage;
 import java.util.*;
 import java.util.stream.Collectors;
 
-@Service("InMemoryFilmService")
-public class InMemoryFilmService implements FilmService {
+@Service("BdFilmService")
+public class BdFilmService implements FilmService {
     private final FilmStorage filmStorage;
     private final UserStorage userStorage;
 
-    public InMemoryFilmService(@Qualifier("InMemoryFilmStorage") FilmStorage filmStorage,
-                               @Qualifier("InMemoryUserStorage") UserStorage userStorage) {
+    public BdFilmService(@Qualifier("BdFilmStorage") FilmStorage filmStorage,
+                         @Qualifier("BdUserStorage") UserStorage userStorage) {
         this.filmStorage = filmStorage;
         this.userStorage = userStorage;
     }

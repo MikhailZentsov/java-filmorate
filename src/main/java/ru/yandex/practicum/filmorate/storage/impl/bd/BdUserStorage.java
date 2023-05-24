@@ -1,7 +1,6 @@
 package ru.yandex.practicum.filmorate.storage.impl.bd;
 
 import org.springframework.dao.DataAccessException;
-import org.springframework.jdbc.core.BatchPreparedStatementSetter;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import org.springframework.stereotype.Repository;
@@ -10,15 +9,8 @@ import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 import ru.yandex.practicum.filmorate.storage.impl.bd.mapper.Mapper;
 
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
 @Repository("BdUserStorage")
 public class BdUserStorage implements UserStorage {
@@ -40,21 +32,6 @@ public class BdUserStorage implements UserStorage {
                 "order by USER_ID";
 
         List<User> users = jdbcTemplate.query(sqlQueryGetUsers, Mapper::mapRowToUser);
-
-        Map<Long, User> mapUsers = users.stream()
-                .collect(Collectors.toMap(User::getId, Function.identity()));
-
-        String sqlQueryGetFriends = "select RU1.USER_ID   as userId,\n" +
-                "       RU1.FRIEND_ID as friendId\n" +
-                "from RELATIONSHIP_USERS RU1\n" +
-                "order by userId, friendId";
-
-        List<Map<String, Object>> friends = jdbcTemplate.queryForList(sqlQueryGetFriends);
-
-        friends.forEach(
-                t -> mapUsers.get(Long.parseLong(t.get("userId").toString())).getFriends().add(
-                        Long.parseLong(t.get("friendId").toString())
-                ));
 
         return Optional.of(users);
     }
@@ -81,18 +58,6 @@ public class BdUserStorage implements UserStorage {
 
         assert user != null;
 
-        String sqlQueryGetFriends = "select RU1.FRIEND_ID as friendId\n" +
-                "from RELATIONSHIP_USERS RU1\n" +
-                "where RU1.USER_ID = ?\n" +
-                "order by friendId";
-
-        List<Long> friendsUser = jdbcTemplate.query(sqlQueryGetFriends,
-                (rs, rowNum) -> rs.getLong(1),
-                id
-        );
-
-        user.setFriends(new LinkedHashSet<>(friendsUser));
-
         return Optional.of(user);
     }
 
@@ -104,24 +69,6 @@ public class BdUserStorage implements UserStorage {
                 .usingGeneratedKeyColumns("USER_ID");
 
         Long userId = simpleJdbcInsert.executeAndReturnKey(user.toMap()).longValue();
-
-        String sqlQueryAddFriends = "insert into RELATIONSHIP_USERS (USER_ID, FRIEND_ID)\n" +
-                "values (?, ?)";
-
-        List<Long> friends = new ArrayList<>(user.getFriends());
-
-        jdbcTemplate.batchUpdate(sqlQueryAddFriends, new BatchPreparedStatementSetter() {
-            @Override
-            public void setValues(PreparedStatement ps, int i) throws SQLException {
-                ps.setLong(1, userId);
-                ps.setLong(2, friends.get(i));
-            }
-
-            @Override
-            public int getBatchSize() {
-                return friends.size();
-            }
-        });
 
         return getUser(userId);
     }
@@ -148,30 +95,37 @@ public class BdUserStorage implements UserStorage {
             return Optional.empty();
         }
 
-        String sqlQueryDeleteFriends = "delete\n" +
-                "from RELATIONSHIP_USERS\n" +
-                "where USER_ID = ?";
-
-        jdbcTemplate.update(sqlQueryDeleteFriends, user.getId());
-
-        String sqlQueryAddFriends = "insert into RELATIONSHIP_USERS (USER_ID, FRIEND_ID)\n" +
-                "values (?, ?)";
-
-        List<Long> friends = new ArrayList<>(user.getFriends());
-
-        jdbcTemplate.batchUpdate(sqlQueryAddFriends, new BatchPreparedStatementSetter() {
-            @Override
-            public void setValues(PreparedStatement ps, int i) throws SQLException {
-                ps.setLong(1, user.getId());
-                ps.setLong(2, friends.get(i));
-            }
-
-            @Override
-            public int getBatchSize() {
-                return friends.size();
-            }
-        });
-
         return getUser(user.getId());
+    }
+
+    @Override
+    public Optional<List<User>> getFriends(Long id) {
+        String sqlQueryGetFriends = "select USERS.user_id as id,\n" +
+                "       email as email,\n" +
+                "       login as login,\n" +
+                "       user_name as name,\n" +
+                "       birthday as birthday\n" +
+                "from USERS\n" +
+                "    inner join RELATIONSHIP_USERS RU on USERS.USER_ID = RU.FRIEND_ID\n" +
+                "where RU.USER_ID = ?" +
+                "order by id";
+
+        return Optional.of(jdbcTemplate.query(sqlQueryGetFriends, Mapper::mapRowToUser, id));
+    }
+
+    @Override
+    public Optional<List<User>> addFriend(Long idUser, Long idFriend) {
+        String sqlQueryAddFriend = "insert into RELATIONSHIP_USERS (user_id, friend_id)" +
+                "values (?, ?)";
+        jdbcTemplate.update(sqlQueryAddFriend, idUser, idFriend);
+        return getFriends(idUser);
+    }
+
+    @Override
+    public Optional<List<User>> removeFriend(Long idUser, Long idFriend) {
+        String sqlQueryRemoveFriend = "delete from RELATIONSHIP_USERS " +
+                "where USER_ID = ? AND FRIEND_ID = ?";
+        jdbcTemplate.update(sqlQueryRemoveFriend, idUser, idFriend);
+        return getFriends(idUser);
     }
 }
