@@ -1,4 +1,4 @@
-package ru.yandex.practicum.filmorate.storage.impl.bd;
+package ru.yandex.practicum.filmorate.storage.impl;
 
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.BatchPreparedStatementSetter;
@@ -9,7 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
-import ru.yandex.practicum.filmorate.storage.impl.bd.mapper.Mapper;
+import ru.yandex.practicum.filmorate.storage.mapper.Mapper;
 
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
@@ -21,12 +21,12 @@ import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-@Repository("BdFilmStorage")
-public class BdFilmStorage implements FilmStorage {
+@Repository
+public class DbFilmStorageImpl implements FilmStorage {
 
     private final JdbcTemplate jdbcTemplate;
 
-    public BdFilmStorage(JdbcTemplate jdbcTemplate) {
+    public DbFilmStorageImpl(JdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
     }
 

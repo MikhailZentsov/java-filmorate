@@ -1,4 +1,4 @@
-package ru.yandex.practicum.filmorate.storage.impl.bd;
+package ru.yandex.practicum.filmorate.storage.impl;
 
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -7,16 +7,16 @@ import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
-import ru.yandex.practicum.filmorate.storage.impl.bd.mapper.Mapper;
+import ru.yandex.practicum.filmorate.storage.mapper.Mapper;
 
 import java.util.List;
 import java.util.Optional;
 
-@Repository("BdUserStorage")
-public class BdUserStorage implements UserStorage {
+@Repository
+public class DbUserStorageImpl implements UserStorage {
     private final JdbcTemplate jdbcTemplate;
 
-    public BdUserStorage(JdbcTemplate jdbcTemplate) {
+    public DbUserStorageImpl(JdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
     }
 

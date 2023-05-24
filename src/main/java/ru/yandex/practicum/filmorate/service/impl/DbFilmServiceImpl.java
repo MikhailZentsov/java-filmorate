@@ -1,6 +1,5 @@
-package ru.yandex.practicum.filmorate.service.impl.impl;
+package ru.yandex.practicum.filmorate.service.impl;
 
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.FilmAlreadyExistsException;
 import ru.yandex.practicum.filmorate.exception.FilmNotFoundException;
@@ -11,16 +10,19 @@ import ru.yandex.practicum.filmorate.service.FilmService;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
 import java.util.stream.Collectors;
 
-@Service("BdFilmService")
-public class BdFilmService implements FilmService {
+@Service
+public class DbFilmServiceImpl implements FilmService {
     private final FilmStorage filmStorage;
     private final UserStorage userStorage;
 
-    public BdFilmService(@Qualifier("BdFilmStorage") FilmStorage filmStorage,
-                         @Qualifier("BdUserStorage") UserStorage userStorage) {
+    public DbFilmServiceImpl(FilmStorage filmStorage,
+                             UserStorage userStorage) {
         this.filmStorage = filmStorage;
         this.userStorage = userStorage;
     }
@@ -33,22 +35,19 @@ public class BdFilmService implements FilmService {
     @Override
     public Film getFilm(Long id) {
         return filmStorage.getFilm(id).orElseThrow(() -> new FilmNotFoundException(String.format(
-                "Фильм с ID %s не найден", id
-        )));
+                "Фильм с ID %s не найден", id)));
     }
 
     @Override
     public Film addFilm(Film film) {
         return filmStorage.addFilm(film).orElseThrow(() -> new FilmAlreadyExistsException(String.format(
-                "Фильм с ID %s уже существует", film.getId()
-        )));
+                "Фильм с ID %s уже существует", film.getId())));
     }
 
     @Override
     public Film updateFilm(Film film) {
         return filmStorage.updateFilm(film).orElseThrow(() -> new FilmNotFoundException(String.format(
-                "Фильм с ID %s не найден", film.getId()
-        )));
+                "Фильм с ID %s не найден", film.getId())));
     }
 
     @Override
@@ -65,11 +64,9 @@ public class BdFilmService implements FilmService {
     @Override
     public Film addLike(Long idFilm, Long idUser) {
         User user = userStorage.getUser(idUser).orElseThrow(() -> new UserNotFoundException(String.format(
-                "Пользователь с ID %s не найден", idUser
-        )));
+                "Пользователь с ID %s не найден", idUser)));
         Film film = filmStorage.getFilm(idFilm).orElseThrow(() -> new FilmNotFoundException(String.format(
-                "Фильм с ID %s не найден", idFilm
-        )));
+                "Фильм с ID %s не найден", idFilm)));
         film.getLikes().add(user.getId());
         filmStorage.updateFilm(film);
 
@@ -79,11 +76,9 @@ public class BdFilmService implements FilmService {
     @Override
     public Film removeLike(Long idFilm, Long idUser) {
         User user = userStorage.getUser(idUser).orElseThrow(() -> new UserNotFoundException(String.format(
-                "Пользователь с ID %s не найден", idUser
-        )));
+                "Пользователь с ID %s не найден", idUser)));
         Film film = filmStorage.getFilm(idFilm).orElseThrow(() -> new FilmNotFoundException(String.format(
-                "Фильм с ID %s не найден", idFilm
-        )));
+                "Фильм с ID %s не найден", idFilm)));
         film.getLikes().remove(user.getId());
         filmStorage.updateFilm(film);
 

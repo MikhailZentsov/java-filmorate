@@ -1,20 +1,20 @@
-package ru.yandex.practicum.filmorate.storage.impl.bd;
+package ru.yandex.practicum.filmorate.storage.impl;
 
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.model.Mpa;
 import ru.yandex.practicum.filmorate.storage.MpaStorage;
-import ru.yandex.practicum.filmorate.storage.impl.bd.mapper.Mapper;
+import ru.yandex.practicum.filmorate.storage.mapper.Mapper;
 
 import java.util.List;
 import java.util.Optional;
 
-@Repository("BdMpaStorage")
-public class BdMpaStorage implements MpaStorage {
+@Repository
+public class DbMpaStorageImpl implements MpaStorage {
     private final JdbcTemplate jdbcTemplate;
 
-    public BdMpaStorage(JdbcTemplate jdbcTemplate) {
+    public DbMpaStorageImpl(JdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
     }
 

@@ -1,6 +1,5 @@
-package ru.yandex.practicum.filmorate.service.impl.impl;
+package ru.yandex.practicum.filmorate.service.impl;
 
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.GenreNotFoundException;
 import ru.yandex.practicum.filmorate.model.Genre;
@@ -10,11 +9,11 @@ import ru.yandex.practicum.filmorate.storage.GenreStorage;
 import java.util.ArrayList;
 import java.util.List;
 
-@Service("BdGenreService")
-public class BdGenreService implements GenreService {
+@Service
+public class DbGenreServiceImpl implements GenreService {
     private final GenreStorage genreStorage;
 
-    public BdGenreService(@Qualifier("BdGenreStorage") GenreStorage genreStorage) {
+    public DbGenreServiceImpl(GenreStorage genreStorage) {
         this.genreStorage = genreStorage;
     }
 

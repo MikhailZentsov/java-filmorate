@@ -1,4 +1,4 @@
-package ru.yandex.practicum.filmorate.storage.impl.bd.mapper;
+package ru.yandex.practicum.filmorate.storage.mapper;
 
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;

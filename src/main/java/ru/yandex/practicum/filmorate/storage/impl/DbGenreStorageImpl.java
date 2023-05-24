@@ -1,20 +1,20 @@
-package ru.yandex.practicum.filmorate.storage.impl.bd;
+package ru.yandex.practicum.filmorate.storage.impl;
 
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.storage.GenreStorage;
-import ru.yandex.practicum.filmorate.storage.impl.bd.mapper.Mapper;
+import ru.yandex.practicum.filmorate.storage.mapper.Mapper;
 
 import java.util.List;
 import java.util.Optional;
 
-@Repository("BdGenreStorage")
-public class BdGenreStorage implements GenreStorage {
+@Repository
+public class DbGenreStorageImpl implements GenreStorage {
     private final JdbcTemplate jdbcTemplate;
 
-    public BdGenreStorage(JdbcTemplate jdbcTemplate) {
+    public DbGenreStorageImpl(JdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
     }
 

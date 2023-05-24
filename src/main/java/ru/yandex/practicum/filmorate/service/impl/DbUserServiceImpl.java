@@ -1,6 +1,5 @@
-package ru.yandex.practicum.filmorate.service.impl.impl;
+package ru.yandex.practicum.filmorate.service.impl;
 
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.UserAlreadyExistsException;
 import ru.yandex.practicum.filmorate.exception.UserNotFoundException;
@@ -11,11 +10,11 @@ import ru.yandex.practicum.filmorate.storage.UserStorage;
 import java.util.*;
 import java.util.stream.Collectors;
 
-@Service("BdUserService")
-public class BdUserService implements UserService {
+@Service
+public class DbUserServiceImpl implements UserService {
     private final UserStorage userStorage;
 
-    public BdUserService(@Qualifier("BdUserStorage") UserStorage userStorage) {
+    public DbUserServiceImpl(UserStorage userStorage) {
         this.userStorage = userStorage;
     }
 
@@ -26,29 +25,25 @@ public class BdUserService implements UserService {
     public User getUser(Long id) {
         return userStorage.getUser(id).orElseThrow(() ->
                 new UserNotFoundException(String.format(
-                    "Пользователь с ID %s не найден", id
-        )));
+                    "Пользователь с ID %s не найден", id)));
     }
 
     public User addUser(User user) {
         return userStorage.addUser(normalizeNameUser(user)).orElseThrow(() ->
                 new UserAlreadyExistsException(String.format(
-                    "Пользователь с ID %s уже существует", user.getId()
-        )));
+                    "Пользователь с ID %s уже существует", user.getId())));
     }
 
     public User updateUser(User user) {
         return userStorage.updateUser(normalizeNameUser(user)).orElseThrow(() ->
                 new UserNotFoundException(String.format(
-                    "Пользователь с ID %s не найден", user.getId()
-        )));
+                    "Пользователь с ID %s не найден", user.getId())));
     }
 
     public List<User> getFriends(Long id) {
         userStorage.getUser(id).orElseThrow(() ->
                 new UserNotFoundException(String.format(
-                    "Пользователь с ID %s не найден", id
-        )));
+                    "Пользователь с ID %s не найден", id)));
 
         return userStorage.getFriends(id).orElse(new ArrayList<>());
     }
@@ -56,12 +51,10 @@ public class BdUserService implements UserService {
     public List<User> addFriend(Long idUser, Long idFriend) {
         userStorage.getUser(idUser).orElseThrow(() ->
                 new UserNotFoundException(String.format(
-                    "Пользователь с ID %s не найден", idUser
-        )));
+                    "Пользователь с ID %s не найден", idUser)));
          userStorage.getUser(idFriend).orElseThrow(() ->
                 new UserNotFoundException(String.format(
-                    "Пользователь с ID %s не найден", idFriend
-        )));
+                    "Пользователь с ID %s не найден", idFriend)));
 
         return userStorage.addFriend(idUser, idFriend).orElse(new ArrayList<>());
     }
@@ -69,12 +62,10 @@ public class BdUserService implements UserService {
     public List<User> removeFriend(Long idUser, Long idFriend) {
         userStorage.getUser(idUser).orElseThrow(() ->
                 new UserNotFoundException(String.format(
-                    "Пользователь с ID %s не найден", idUser
-        )));
+                    "Пользователь с ID %s не найден", idUser)));
         userStorage.getUser(idFriend).orElseThrow(() ->
                 new UserNotFoundException(String.format(
-                    "Пользователь с ID %s не найден", idFriend
-        )));
+                    "Пользователь с ID %s не найден", idFriend)));
 
         return userStorage.removeFriend(idUser, idFriend).orElse(new ArrayList<>());
     }
@@ -82,12 +73,10 @@ public class BdUserService implements UserService {
     public List<User> getCommonFriends(Long idUser, Long idFriend) {
         userStorage.getUser(idUser).orElseThrow(() ->
                 new UserNotFoundException(String.format(
-                    "Пользователь с ID %s не найден", idUser
-        )));
+                    "Пользователь с ID %s не найден", idUser)));
         userStorage.getUser(idFriend).orElseThrow(() ->
                 new UserNotFoundException(String.format(
-                    "Пользователь с ID %s не найден", idFriend
-        )));
+                    "Пользователь с ID %s не найден", idFriend)));
 
         List<User> userFriends = userStorage.getFriends(idUser).orElse(new ArrayList<>());
 
