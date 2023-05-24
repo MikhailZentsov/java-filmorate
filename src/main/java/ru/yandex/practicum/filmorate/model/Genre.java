@@ -21,14 +21,16 @@ public enum Genre {
         this.name = name;
     }
 
-    public String getName() { return name; }
+    public String getName() {
+        return name;
+    }
 
     public int getId() {
         return id;
     }
 
     @JsonCreator
-    public static Genre forValues(@JsonProperty("id") int id) {
+    public static Genre forValues(@JsonProperty("id")int id) {
         for (Genre genre : Genre.values()) {
             if (genre.id == id ) {
                 return genre;
