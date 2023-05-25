@@ -16,7 +16,7 @@ import javax.validation.Valid;
 import java.util.List;
 
 @RestController
-@RequestMapping("/users")
+@RequestMapping(value = "/users")
 @Slf4j
 public class UserController {
     private final UserService userService;
@@ -30,7 +30,7 @@ public class UserController {
         return userService.getUsers();
     }
 
-    @PostMapping
+    @PostMapping(consumes = "application/json")
     public User addUser(@Valid @RequestBody User user) {
         return userService.addUser(user);
     }

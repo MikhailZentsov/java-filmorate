@@ -7,9 +7,7 @@ import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Positive;
 import javax.validation.constraints.Size;
 import java.time.LocalDate;
-import java.util.HashSet;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 
 
 public class Film {
@@ -29,15 +27,21 @@ public class Film {
     @Positive(message = "Длительность не может быть отрицательной или нулевой")
     private Integer duration;
 
+    private Mpa mpa;
+
+    private Set<Genre> genres;
+
     private Set<Long> likes;
 
-    public Film(long id, String name, String description, LocalDate releaseDate, Integer duration) {
+    public Film(long id, String name, String description, LocalDate releaseDate, Integer duration, Mpa mpa) {
         this.id = id;
         this.name = name;
         this.description = description;
         this.releaseDate = releaseDate;
         this.duration = duration;
-        this.likes = new HashSet<>();
+        this.mpa = mpa;
+        genres = new LinkedHashSet<>();
+        likes = new LinkedHashSet<>();
     }
 
     public long getId() {
@@ -80,6 +84,22 @@ public class Film {
         this.duration = duration;
     }
 
+    public Mpa getMpa() {
+        return mpa;
+    }
+
+    public void setMpa(Mpa mpa) {
+        this.mpa = mpa;
+    }
+
+    public Set<Genre> getGenres() {
+        return genres;
+    }
+
+    public void setGenres(Set<Genre> genres) {
+        this.genres = genres;
+    }
+
     public Set<Long> getLikes() {
         return likes;
     }
@@ -88,12 +108,16 @@ public class Film {
         this.likes = likes;
     }
 
-    public void addLike(Long id) {
-        likes.add(id);
-    }
+    public Map<String, Object> toMap() {
+        Map<String, Object> values = new HashMap<>();
+        values.put("FILM_ID", id);
+        values.put("FILM_NAME", name);
+        values.put("FILM_DESCRIPTION", description);
+        values.put("RATING_ID", mpa.getId());
+        values.put("RELEASE_DATE", releaseDate);
+        values.put("DURATION", duration);
 
-    public void removeLike(Long id) {
-        likes.remove(id);
+        return values;
     }
 
     @Override
@@ -117,6 +141,7 @@ public class Film {
                 ", description='" + description + '\'' +
                 ", releaseDate=" + releaseDate +
                 ", duration=" + duration +
+                ", mpa=" + mpa +
                 '}';
     }
 }
