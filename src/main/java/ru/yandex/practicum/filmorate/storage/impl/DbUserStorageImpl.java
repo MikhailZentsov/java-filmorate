@@ -22,13 +22,13 @@ public class DbUserStorageImpl implements UserStorage {
 
     @Override
     @Transactional
-    public Optional<List<User>> getUsers() {
-        String sqlQueryGetUsers = "select USER_ID as id,\n" +
-                "       USER_NAME as name,\n" +
-                "       EMAIL as email,\n" +
-                "       LOGIN as login,\n" +
-                "       BIRTHDAY as birthday\n" +
-                "from USERS\n" +
+    public Optional<List<User>> findAll() {
+        String sqlQueryGetUsers = "select USER_ID as id, " +
+                "       USER_NAME as name, " +
+                "       EMAIL as email, " +
+                "       LOGIN as login, " +
+                "       BIRTHDAY as birthday " +
+                "from USERS " +
                 "order by USER_ID";
 
         List<User> users = jdbcTemplate.query(sqlQueryGetUsers, Mapper::mapRowToUser);
@@ -38,13 +38,13 @@ public class DbUserStorageImpl implements UserStorage {
 
     @Override
     @Transactional
-    public Optional<User> getUser(Long id) {
-        String sqlQueryGetUser = "select USER_ID as id,\n" +
-                "       USER_NAME as name,\n" +
-                "       EMAIL as email,\n" +
-                "       LOGIN as login,\n" +
-                "       BIRTHDAY as birthday\n" +
-                "from USERS\n" +
+    public Optional<User> getById(Long id) {
+        String sqlQueryGetUser = "select USER_ID as id, " +
+                "       USER_NAME as name, " +
+                "       EMAIL as email, " +
+                "       LOGIN as login, " +
+                "       BIRTHDAY as birthday " +
+                "from USERS " +
                 "where USER_ID = ?" +
                 "order by USER_ID";
 
@@ -63,24 +63,24 @@ public class DbUserStorageImpl implements UserStorage {
 
     @Override
     @Transactional
-    public Optional<User> addUser(User user) {
+    public Optional<User> saveOne(User user) {
         SimpleJdbcInsert simpleJdbcInsert = new SimpleJdbcInsert(jdbcTemplate)
                 .withTableName("USERS")
                 .usingGeneratedKeyColumns("USER_ID");
 
         Long userId = simpleJdbcInsert.executeAndReturnKey(user.toMap()).longValue();
 
-        return getUser(userId);
+        return getById(userId);
     }
 
     @Override
     @Transactional
-    public Optional<User> updateUser(User user) {
-        String sqlQueryUpdateUser = "update USERS\n" +
-                "set EMAIL = ?,\n" +
-                "    LOGIN = ?,\n" +
-                "    USER_NAME = ?,\n" +
-                "    BIRTHDAY = ?\n" +
+    public Optional<User> updateOne(User user) {
+        String sqlQueryUpdateUser = "update USERS " +
+                "set EMAIL = ?, " +
+                "    LOGIN = ?, " +
+                "    USER_NAME = ?, " +
+                "    BIRTHDAY = ? " +
                 "where USER_ID = ?";
 
         try {
@@ -95,18 +95,18 @@ public class DbUserStorageImpl implements UserStorage {
             return Optional.empty();
         }
 
-        return getUser(user.getId());
+        return getById(user.getId());
     }
 
     @Override
-    public Optional<List<User>> getFriends(Long id) {
-        String sqlQueryGetFriends = "select USERS.user_id as id,\n" +
-                "       email as email,\n" +
-                "       login as login,\n" +
-                "       user_name as name,\n" +
-                "       birthday as birthday\n" +
-                "from USERS\n" +
-                "    inner join RELATIONSHIP_USERS RU on USERS.USER_ID = RU.FRIEND_ID\n" +
+    public Optional<List<User>> findAllFriendsById(Long id) {
+        String sqlQueryGetFriends = "select USERS.user_id as id, " +
+                "       email as email, " +
+                "       login as login, " +
+                "       user_name as name, " +
+                "       birthday as birthday " +
+                "from USERS " +
+                "    inner join RELATIONSHIP_USERS RU on USERS.USER_ID = RU.FRIEND_ID " +
                 "where RU.USER_ID = ?" +
                 "order by id";
 
@@ -114,18 +114,18 @@ public class DbUserStorageImpl implements UserStorage {
     }
 
     @Override
-    public Optional<List<User>> addFriend(Long idUser, Long idFriend) {
+    public Optional<List<User>> saveOneFriend(Long idUser, Long idFriend) {
         String sqlQueryAddFriend = "insert into RELATIONSHIP_USERS (user_id, friend_id)" +
                 "values (?, ?)";
         jdbcTemplate.update(sqlQueryAddFriend, idUser, idFriend);
-        return getFriends(idUser);
+        return findAllFriendsById(idUser);
     }
 
     @Override
-    public Optional<List<User>> removeFriend(Long idUser, Long idFriend) {
+    public Optional<List<User>> deleteOneFriend(Long idUser, Long idFriend) {
         String sqlQueryRemoveFriend = "delete from RELATIONSHIP_USERS " +
                 "where USER_ID = ? AND FRIEND_ID = ?";
         jdbcTemplate.update(sqlQueryRemoveFriend, idUser, idFriend);
-        return getFriends(idUser);
+        return findAllFriendsById(idUser);
     }
 }

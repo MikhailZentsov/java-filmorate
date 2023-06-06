@@ -19,14 +19,14 @@ public class DbGenreStorageImpl implements GenreStorage {
     }
 
     @Override
-    public Optional<List<Genre>> getGenres() {
+    public Optional<List<Genre>> findAll() {
         String sqlQuery = "select GENRE_NAME from GENRES";
 
         return Optional.of(jdbcTemplate.query(sqlQuery, Mapper::mapRowToGenre));
     }
 
     @Override
-    public Optional<Genre> getGenre(Integer id) {
+    public Optional<Genre> getById(Integer id) {
         String sqlQuery = "select GENRE_NAME from GENRES where GENRE_ID = ?";
 
         try {

@@ -19,14 +19,14 @@ public class DbMpaStorageImpl implements MpaStorage {
     }
 
     @Override
-    public Optional<List<Mpa>> getMpas() {
+    public Optional<List<Mpa>> findAll() {
         String sqlQuery = "select RATING_NAME from RATINGS";
 
         return Optional.of(jdbcTemplate.query(sqlQuery, Mapper::mapRowToMpa));
     }
 
     @Override
-    public Optional<Mpa> getMpa(Integer id) {
+    public Optional<Mpa> getById(Integer id) {
         String sqlQuery = "select RATING_NAME from RATINGS where RATING_ID = ?";
 
         try {

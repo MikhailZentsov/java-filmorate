@@ -19,12 +19,12 @@ public class DbMpaServiceImpl implements MpaService {
 
     @Override
     public List<Mpa> getMpas() {
-        return mpaStorage.getMpas().orElse(new ArrayList<>());
+        return mpaStorage.findAll().orElse(new ArrayList<>());
     }
 
     @Override
     public Mpa getMpa(Integer id) {
-        return mpaStorage.getMpa(id).orElseThrow(() ->
+        return mpaStorage.getById(id).orElseThrow(() ->
                 new MpaNotFoundException(String.format(
                         "Рейтинг с ID %s не найден", id)));
     }

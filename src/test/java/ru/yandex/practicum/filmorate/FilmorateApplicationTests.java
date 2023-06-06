@@ -68,36 +68,36 @@ class FilmorateApplicationTests {
 
 	@Test
 	public void testGetGenres() {
-		assertEquals(genreStorage.getGenres().orElse(new ArrayList<>()).size(), 6);
+		assertEquals(genreStorage.findAll().orElse(new ArrayList<>()).size(), 6);
 	}
 
 	@Test
 	public void testGetGenreById() {
-		assertEquals(genreStorage.getGenre(1).orElse(null), Genre.COMEDY);
-		assertEquals(genreStorage.getGenre(2).orElse(null), Genre.DRAMA);
-		assertEquals(genreStorage.getGenre(3).orElse(null), Genre.CARTOON);
-		assertEquals(genreStorage.getGenre(4).orElse(null), Genre.THRILLER);
-		assertEquals(genreStorage.getGenre(5).orElse(null), Genre.DOCUMENTARY);
-		assertEquals(genreStorage.getGenre(6).orElse(null), Genre.ACTION);
+		assertEquals(genreStorage.getById(1).orElse(null), Genre.COMEDY);
+		assertEquals(genreStorage.getById(2).orElse(null), Genre.DRAMA);
+		assertEquals(genreStorage.getById(3).orElse(null), Genre.CARTOON);
+		assertEquals(genreStorage.getById(4).orElse(null), Genre.THRILLER);
+		assertEquals(genreStorage.getById(5).orElse(null), Genre.DOCUMENTARY);
+		assertEquals(genreStorage.getById(6).orElse(null), Genre.ACTION);
 	}
 
 	@Test
 	void testGetMpas() {
-		assertEquals(mpaStorage.getMpas().orElse(new ArrayList<>()).size(), 5);
+		assertEquals(mpaStorage.findAll().orElse(new ArrayList<>()).size(), 5);
 	}
 
 	@Test
 	void testGetMpaById() {
-		assertEquals(mpaStorage.getMpa(1).orElse(null), Mpa.G);
-		assertEquals(mpaStorage.getMpa(2).orElse(null), Mpa.PG);
-		assertEquals(mpaStorage.getMpa(3).orElse(null), Mpa.PG13);
-		assertEquals(mpaStorage.getMpa(4).orElse(null), Mpa.R);
-		assertEquals(mpaStorage.getMpa(5).orElse(null), Mpa.NC17);
+		assertEquals(mpaStorage.getById(1).orElse(null), Mpa.G);
+		assertEquals(mpaStorage.getById(2).orElse(null), Mpa.PG);
+		assertEquals(mpaStorage.getById(3).orElse(null), Mpa.PG13);
+		assertEquals(mpaStorage.getById(4).orElse(null), Mpa.R);
+		assertEquals(mpaStorage.getById(5).orElse(null), Mpa.NC17);
 	}
 
 	@Test
 	void testEmptyGetFilms() {
-		Optional<List<Film>> films = filmStorage.getFilms();
+		Optional<List<Film>> films = filmStorage.findAll();
 
 		assertTrue(films.isPresent());
 		assertTrue(films.get().isEmpty());
@@ -105,7 +105,7 @@ class FilmorateApplicationTests {
 
 	@Test
 	void testAddFilm() {
-		Optional<Film> filmOptional = filmStorage.addFilm(filmOne);
+		Optional<Film> filmOptional = filmStorage.saveOne(filmOne);
 
 		assertThat(filmOptional)
 				.isPresent()
@@ -121,8 +121,8 @@ class FilmorateApplicationTests {
 
 	@Test
 	void testGetFilms() {
-		filmStorage.addFilm(filmOne);
-		Optional<List<Film>> filmsOptional = filmStorage.getFilms();
+		filmStorage.saveOne(filmOne);
+		Optional<List<Film>> filmsOptional = filmStorage.findAll();
 
 		assertTrue(filmsOptional.isPresent());
 		assertEquals(filmsOptional.get().size(), 1);
@@ -137,8 +137,8 @@ class FilmorateApplicationTests {
 					assertThat(list.get(0)).hasFieldOrPropertyWithValue("mpa", Mpa.G);
 				});
 
-		filmStorage.addFilm(filmTwo);
-		filmsOptional = filmStorage.getFilms();
+		filmStorage.saveOne(filmTwo);
+		filmsOptional = filmStorage.findAll();
 
 		assertTrue(filmsOptional.isPresent());
 		assertEquals(filmsOptional.get().size(), 2);
@@ -163,10 +163,10 @@ class FilmorateApplicationTests {
 
 	@Test
 	void testUpdateFilm() {
-		filmStorage.addFilm(filmOne);
+		filmStorage.saveOne(filmOne);
 		filmTwo.setId(1);
-		filmStorage.updateFilm(filmTwo);
-		Optional<List<Film>> filmsOptional = filmStorage.getFilms();
+		filmStorage.updateOne(filmTwo);
+		Optional<List<Film>> filmsOptional = filmStorage.findAll();
 
 		assertTrue(filmsOptional.isPresent());
 		assertEquals(filmsOptional.get().size(), 1);
@@ -184,7 +184,7 @@ class FilmorateApplicationTests {
 
 	@Test
 	void testEmptyGetUsers() {
-		Optional<List<User>> usersOptional = userStorage.getUsers();
+		Optional<List<User>> usersOptional = userStorage.findAll();
 
 		assertTrue(usersOptional.isPresent());
 		assertTrue(usersOptional.get().isEmpty());
@@ -192,7 +192,7 @@ class FilmorateApplicationTests {
 
 	@Test
 	void testAddUser() {
-		Optional<User> userOptional = userStorage.addUser(userOne);
+		Optional<User> userOptional = userStorage.saveOne(userOne);
 
 		assertThat(userOptional)
 				.isPresent()
@@ -207,8 +207,8 @@ class FilmorateApplicationTests {
 
 	@Test
 	void testGetUsers() {
-		userStorage.addUser(userOne);
-		Optional<List<User>> usersOptional = userStorage.getUsers();
+		userStorage.saveOne(userOne);
+		Optional<List<User>> usersOptional = userStorage.findAll();
 
 		assertTrue(usersOptional.isPresent());
 		assertEquals(usersOptional.get().size(), 1);
@@ -222,8 +222,8 @@ class FilmorateApplicationTests {
 					assertThat(list.get(0)).hasFieldOrPropertyWithValue("birthday", LocalDate.of(1990, 12, 12));
 				});
 
-		userStorage.addUser(userTwo);
-		usersOptional = userStorage.getUsers();
+		userStorage.saveOne(userTwo);
+		usersOptional = userStorage.findAll();
 
 		assertTrue(usersOptional.isPresent());
 		assertEquals(usersOptional.get().size(), 2);
@@ -246,10 +246,10 @@ class FilmorateApplicationTests {
 
 	@Test
 	void testUpdateUser() {
-		userStorage.addUser(userOne);
+		userStorage.saveOne(userOne);
 		userTwo.setId(1);
-		userStorage.updateUser(userTwo);
-		Optional<List<User>> usersOptional = userStorage.getUsers();
+		userStorage.updateOne(userTwo);
+		Optional<List<User>> usersOptional = userStorage.findAll();
 
 		assertTrue(usersOptional.isPresent());
 		assertEquals(usersOptional.get().size(), 1);
@@ -266,10 +266,10 @@ class FilmorateApplicationTests {
 
 	@Test
 	void testAddFriend() {
-		userStorage.addUser(userOne);
-		userStorage.addUser(userTwo);
+		userStorage.saveOne(userOne);
+		userStorage.saveOne(userTwo);
 
-		Optional<List<User>> friendsUserOne = userStorage.addFriend(1L, 2L);
+		Optional<List<User>> friendsUserOne = userStorage.saveOneFriend(1L, 2L);
 
 		assertTrue(friendsUserOne.isPresent());
 		assertEquals(friendsUserOne.get().size(), 1);
@@ -283,7 +283,7 @@ class FilmorateApplicationTests {
 					assertThat(list.get(0)).hasFieldOrPropertyWithValue("birthday", LocalDate.of(1995, 5, 5));
 				});
 
-		Optional<List<User>> friendsUserTwo = userStorage.getFriends(2L);
+		Optional<List<User>> friendsUserTwo = userStorage.findAllFriendsById(2L);
 
 		assertTrue(friendsUserTwo.isPresent());
 		assertTrue(friendsUserTwo.get().isEmpty());
@@ -291,11 +291,11 @@ class FilmorateApplicationTests {
 
 	@Test
 	void testRemoveFriend() {
-		userStorage.addUser(userOne);
-		userStorage.addUser(userTwo);
-		userStorage.addFriend(1L, 2L);
+		userStorage.saveOne(userOne);
+		userStorage.saveOne(userTwo);
+		userStorage.saveOneFriend(1L, 2L);
 
-		Optional<List<User>> friendsUserOne = userStorage.removeFriend(1L, 2L);
+		Optional<List<User>> friendsUserOne = userStorage.deleteOneFriend(1L, 2L);
 
 		assertTrue(friendsUserOne.isPresent());
 		assertTrue(friendsUserOne.get().isEmpty());

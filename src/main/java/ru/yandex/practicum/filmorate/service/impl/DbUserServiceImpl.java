@@ -19,68 +19,68 @@ public class DbUserServiceImpl implements UserService {
     }
 
     public List<User> getUsers() {
-        return userStorage.getUsers().orElse(new ArrayList<>());
+        return userStorage.findAll().orElse(new ArrayList<>());
     }
 
     public User getUser(Long id) {
-        return userStorage.getUser(id).orElseThrow(() ->
+        return userStorage.getById(id).orElseThrow(() ->
                 new UserNotFoundException(String.format(
                     "Пользователь с ID %s не найден", id)));
     }
 
     public User addUser(User user) {
-        return userStorage.addUser(normalizeNameUser(user)).orElseThrow(() ->
+        return userStorage.saveOne(normalizeNameUser(user)).orElseThrow(() ->
                 new UserAlreadyExistsException(String.format(
                     "Пользователь с ID %s уже существует", user.getId())));
     }
 
     public User updateUser(User user) {
-        return userStorage.updateUser(normalizeNameUser(user)).orElseThrow(() ->
+        return userStorage.updateOne(normalizeNameUser(user)).orElseThrow(() ->
                 new UserNotFoundException(String.format(
                     "Пользователь с ID %s не найден", user.getId())));
     }
 
     public List<User> getFriends(Long id) {
-        userStorage.getUser(id).orElseThrow(() ->
+        userStorage.getById(id).orElseThrow(() ->
                 new UserNotFoundException(String.format(
                     "Пользователь с ID %s не найден", id)));
 
-        return userStorage.getFriends(id).orElse(new ArrayList<>());
+        return userStorage.findAllFriendsById(id).orElse(new ArrayList<>());
     }
 
     public List<User> addFriend(Long idUser, Long idFriend) {
-        userStorage.getUser(idUser).orElseThrow(() ->
+        userStorage.getById(idUser).orElseThrow(() ->
                 new UserNotFoundException(String.format(
                     "Пользователь с ID %s не найден", idUser)));
-         userStorage.getUser(idFriend).orElseThrow(() ->
+         userStorage.getById(idFriend).orElseThrow(() ->
                 new UserNotFoundException(String.format(
                     "Пользователь с ID %s не найден", idFriend)));
 
-        return userStorage.addFriend(idUser, idFriend).orElse(new ArrayList<>());
+        return userStorage.saveOneFriend(idUser, idFriend).orElse(new ArrayList<>());
     }
 
     public List<User> removeFriend(Long idUser, Long idFriend) {
-        userStorage.getUser(idUser).orElseThrow(() ->
+        userStorage.getById(idUser).orElseThrow(() ->
                 new UserNotFoundException(String.format(
                     "Пользователь с ID %s не найден", idUser)));
-        userStorage.getUser(idFriend).orElseThrow(() ->
+        userStorage.getById(idFriend).orElseThrow(() ->
                 new UserNotFoundException(String.format(
                     "Пользователь с ID %s не найден", idFriend)));
 
-        return userStorage.removeFriend(idUser, idFriend).orElse(new ArrayList<>());
+        return userStorage.deleteOneFriend(idUser, idFriend).orElse(new ArrayList<>());
     }
 
     public List<User> getCommonFriends(Long idUser, Long idFriend) {
-        userStorage.getUser(idUser).orElseThrow(() ->
+        userStorage.getById(idUser).orElseThrow(() ->
                 new UserNotFoundException(String.format(
                     "Пользователь с ID %s не найден", idUser)));
-        userStorage.getUser(idFriend).orElseThrow(() ->
+        userStorage.getById(idFriend).orElseThrow(() ->
                 new UserNotFoundException(String.format(
                     "Пользователь с ID %s не найден", idFriend)));
 
-        List<User> userFriends = userStorage.getFriends(idUser).orElse(new ArrayList<>());
+        List<User> userFriends = userStorage.findAllFriendsById(idUser).orElse(new ArrayList<>());
 
-        List<User> friendFriends = userStorage.getFriends(idFriend).orElse(new ArrayList<>());
+        List<User> friendFriends = userStorage.findAllFriendsById(idFriend).orElse(new ArrayList<>());
 
         if (userFriends.isEmpty() || friendFriends.isEmpty()) {
             return new ArrayList<>();
