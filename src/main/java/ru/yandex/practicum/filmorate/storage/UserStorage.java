@@ -6,17 +6,17 @@ import java.util.List;
 import java.util.Optional;
 
 public interface UserStorage {
-    Optional<List<User>> getUsers();
+    Optional<List<User>> findAll();
 
-    Optional<User> getUser(Long id);
+    Optional<User> getById(Long id);
 
-    Optional<User> addUser(User user);
+    Optional<User> saveOne(User user);
 
-    Optional<User> updateUser(User user);
+    Optional<User> updateOne(User user);
 
-    Optional<List<User>> getFriends(Long id);
+    Optional<List<User>> findAllFriendsById(Long id);
 
-    Optional<List<User>> addFriend(Long idUser, Long idFriend);
+    Optional<List<User>> saveOneFriend(Long idUser, Long idFriend);
 
-    Optional<List<User>> removeFriend(Long idUser, Long idFriend);
+    Optional<List<User>> deleteOneFriend(Long idUser, Long idFriend);
 }

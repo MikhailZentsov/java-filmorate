@@ -19,12 +19,12 @@ public class DbGenreServiceImpl implements GenreService {
 
     @Override
     public List<Genre> getGenres() {
-        return genreStorage.getGenres().orElse(new ArrayList<>());
+        return genreStorage.findAll().orElse(new ArrayList<>());
     }
 
     @Override
     public Genre getGenre(Integer id) {
-        return genreStorage.getGenre(id).orElseThrow(() ->
+        return genreStorage.getById(id).orElseThrow(() ->
                 new GenreNotFoundException(String.format(
                         "Жанр с ID %s не найден", id
                 )));
