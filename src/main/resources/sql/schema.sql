@@ -70,3 +70,10 @@ create table if not exists PUBLIC.LIKES_FILMS
     constraint FK_LIKES_FILMS_USER_ID
         foreign key (USER_ID) references PUBLIC.USERS
 );
+
+create table if not exists PUBLIC.DIRECTORS
+(
+    DIRECTOR_ID BIGINT auto_increment
+        primary key,
+    DIRECTOR_NAME CHARACTER VARYING(100)
+)
