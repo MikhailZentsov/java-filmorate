@@ -19,4 +19,6 @@ public interface UserStorage {
     Optional<List<User>> saveOneFriend(Long idUser, Long idFriend);
 
     Optional<List<User>> deleteOneFriend(Long idUser, Long idFriend);
+
+    Optional<User> deleteUserById(long userId);
 }
