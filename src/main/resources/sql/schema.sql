@@ -54,9 +54,9 @@ create table if not exists PUBLIC.RELATIONSHIP_USERS
     constraint PK_RELATIONSHIP_USERS
         primary key (USER_ID, FRIEND_ID),
     constraint FK_RELATIONSHIP_USERS_USER_ID
-        foreign key (USER_ID) references PUBLIC.USERS,
+        foreign key (USER_ID) references PUBLIC.USERS ON DELETE CASCADE ON UPDATE CASCADE,
     constraint FK_RELATIONSHIP_USERS_FRIEND_ID
-        foreign key (FRIEND_ID) references PUBLIC.USERS
+        foreign key (FRIEND_ID) references PUBLIC.USERS ON DELETE CASCADE ON UPDATE CASCADE
 );
 
 create table if not exists PUBLIC.LIKES_FILMS
