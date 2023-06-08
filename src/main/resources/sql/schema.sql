@@ -32,7 +32,7 @@ create table if not exists PUBLIC.GENRES_FILMS
     constraint PK_GENRE_FILMS
         primary key (FILM_ID, GENRE_ID),
     constraint FK_GENRE_FILMS_FILM
-        foreign key (FILM_ID) references PUBLIC.FILMS,
+        foreign key (FILM_ID) references PUBLIC.FILMS ON DELETE CASCADE ON UPDATE CASCADE,
     constraint FK_GENRE_FILMS_GENRE
         foreign key (GENRE_ID) references PUBLIC.GENRES
 );
@@ -66,7 +66,7 @@ create table if not exists PUBLIC.LIKES_FILMS
     constraint PK_LIKES_FILMS
         primary key (FILM_ID, USER_ID),
     constraint FK_LIKES_FILMS_FILM_ID
-        foreign key (FILM_ID) references PUBLIC.FILMS,
+        foreign key (FILM_ID) references PUBLIC.FILMS ON DELETE CASCADE ON UPDATE CASCADE,
     constraint FK_LIKES_FILMS_USER_ID
-        foreign key (USER_ID) references PUBLIC.USERS
+        foreign key (USER_ID) references PUBLIC.USERS ON DELETE CASCADE ON UPDATE CASCADE
 );
