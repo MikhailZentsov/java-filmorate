@@ -58,6 +58,24 @@ public class DbFilmStorageImpl implements FilmStorage {
                         Genre.valueOf(t.get("genreName").toString())
                 ));
 
+        String sqlQueryGetDirectors = "select DIRECTOR_ID as id, DIRECTOR_NAME as name " +
+                "from DIRECTORS ";
+
+        List<Map<String, Object>> directorsFilms = jdbcTemplate.queryForList(sqlQueryGetDirectors);
+
+        directorsFilms.forEach(t -> {
+            long directorId = Long.parseLong(t.get("id").toString());
+            String directorName = t.get("name").toString();
+            Director director = new Director(directorId, directorName); // Замените на свой класс режиссера
+
+            // Найти фильм по идентификатору режиссера и добавить режиссера к нему
+            mapFilms.values().forEach(film -> {
+                if (film.getDirectors().contains(directorId)) {
+                    film.getDirectors().add(director);
+                }
+            });
+        });
+
         return Optional.of(films);
     }
 

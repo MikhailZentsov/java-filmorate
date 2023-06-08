@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.service.impl;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.DirectorAlreadyExistsException;
 import ru.yandex.practicum.filmorate.exception.DirectorNotFoundException;
@@ -11,13 +12,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Service
+@RequiredArgsConstructor
 public class DbDirectorServiceImpl implements DirectorService {
 
     private final DirectorStorage directorStorage;
-
-    public DbDirectorServiceImpl(DirectorStorage directorStorage) {
-        this.directorStorage = directorStorage;
-    }
 
     @Override
     public List<Director> getDirectors() {
