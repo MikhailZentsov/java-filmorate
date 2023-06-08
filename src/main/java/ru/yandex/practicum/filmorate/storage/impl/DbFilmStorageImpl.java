@@ -240,4 +240,12 @@ public class DbFilmStorageImpl implements FilmStorage {
 
         jdbcTemplate.update(sqlQueryDeleteLikes, idFilm, idUser);
     }
+    @Override
+    public Optional<Film> deleteFilmById(long filmId) {
+        Optional<Film> film = getById(filmId);
+        String sqlQueryDeleteFilm = "delete from FILMS where FILM_ID = ?;";
+        jdbcTemplate.update(sqlQueryDeleteFilm, filmId);
+
+        return film;
+    }
 }

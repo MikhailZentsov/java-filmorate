@@ -71,4 +71,9 @@ public class DbFilmServiceImpl implements FilmService {
                 "Фильм с ID %s не найден", idFilm)));
         filmStorage.removeLike(idFilm, idUser);
     }
+    @Override
+    public void deleteFilmById(long filmId) {
+        filmStorage.deleteFilmById(filmId).orElseThrow(()->new FilmNotFoundException(String.format(
+                "Фильм с ID %s не найден", filmId)));
+    }
 }
