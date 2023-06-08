@@ -240,4 +240,60 @@ public class DbFilmStorageImpl implements FilmStorage {
 
         jdbcTemplate.update(sqlQueryDeleteLikes, idFilm, idUser);
     }
+
+    @Override
+    public List<Film> findFilmsByNameAndDirector(String query, List<String> by) {
+        String sqlQuery;
+        String sqlQueryFindFilmsByName = "select FILM_ID          as id,\n" +
+                "       FILM_NAME        as name,\n" +
+                "       FILM_DESCRIPTION as description,\n" +
+                "       RATING_ID        as mpa,\n" +
+                "       RELEASE_DATE     as releaseDate,\n" +
+                "       DURATION         as duration\n" +
+                "from FILMS\n" +
+                "where FILM_NAME ILIKE CONCAT('%', ?, '%')";
+        String sqlQueryFindFilmsByDirector = "select F.FILM_ID        as id,\n" +
+                "       FILM_NAME        as name,\n" +
+                "       FILM_DESCRIPTION as description,\n" +
+                "       RATING_ID        as mpa,\n" +
+                "       RELEASE_DATE     as releaseDate,\n" +
+                "       DURATION         as duration\n" +
+                "from FILMS F\n" +
+                "         inner join DIRECTORS_FILMS DF on F.FILM_ID = DF.FILM_ID\n" +
+                "         inner join DIRECTORS D on DF.DIRECTOR_ID = D.DIRECTOR_ID\n" +
+                "where DIRECTOR_NAME ILIKE CONCAT('%', ?, '%')";
+
+        if (by.size() == 2) {
+            sqlQuery = sqlQueryFindFilmsByName + " union all " + sqlQueryFindFilmsByDirector + " order by id";
+        } else if (by.contains("title")) {
+            sqlQuery = sqlQueryFindFilmsByName;
+        } else if (by.contains("director")) {
+            sqlQuery = sqlQueryFindFilmsByDirector;
+        } else {
+            return new ArrayList<>();
+        }
+
+        List<Film> films = jdbcTemplate.query(sqlQuery, Mapper::mapRowToFilm, query);
+
+        if (!films.isEmpty()) {
+            Map<Long, Film> mapFilms = films.stream().collect(Collectors.toMap(Film::getId, Function.identity()));
+            String sqlQueryGetAllGenres = "select FG.FILM_ID as filmId, " +
+                    "       G2.GENRE_NAME as genreName, " +
+                    "       G2.GENRE_ID as genreId " +
+                    "from GENRES_FILMS FG " +
+                    "    left join GENRES G2 on FG.GENRE_ID = G2.GENRE_ID " +
+                    "where FG.FILM_ID IN ( " + mapFilms.keySet()
+                    .stream()
+                    .map(String::valueOf)
+                    .collect(Collectors.joining(",")) + " ) " +
+                    "order by genreId ";
+            List<Map<String, Object>> genres = jdbcTemplate.queryForList(sqlQueryGetAllGenres);
+            genres.forEach(t -> mapFilms.get(Long.parseLong(t.get("filmId").toString()))
+                    .getGenres()
+                    .add(Genre.valueOf(t.get("genreName").toString())
+                    ));
+        }
+
+        return films;
+    }
 }

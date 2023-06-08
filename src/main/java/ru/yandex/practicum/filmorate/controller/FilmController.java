@@ -14,6 +14,7 @@ import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.service.FilmService;
 
 import javax.validation.Valid;
+import javax.validation.constraints.NotBlank;
 import java.util.List;
 
 @RestController
@@ -59,5 +60,12 @@ public class FilmController {
     @GetMapping("/popular")
     public List<Film> getTopFilms(@RequestParam(required = false) Long count) {
         return filmService.getTopFilms(count);
+    }
+
+    @GetMapping("/search")
+    public List<Film> getFilmsWithQueryByTitleAndDirector(
+            @RequestParam @NotBlank String query,
+            @RequestParam List<String> by) {
+        return filmService.getFilmsWithQueryByTitleAndDirector(query, by);
     }
 }

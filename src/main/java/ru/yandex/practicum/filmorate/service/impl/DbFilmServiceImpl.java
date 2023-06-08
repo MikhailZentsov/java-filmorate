@@ -71,4 +71,15 @@ public class DbFilmServiceImpl implements FilmService {
                 "Фильм с ID %s не найден", idFilm)));
         filmStorage.removeLike(idFilm, idUser);
     }
+
+    @Override
+    public List<Film> getFilmsWithQueryByTitleAndDirector(String query, List<String> by) {
+        List<String> listBy = new ArrayList<>();
+        listBy.add("title");
+        listBy.add("director");
+
+        by.retainAll(listBy);
+
+        return filmStorage.findFilmsByNameAndDirector(query, by);
+    }
 }
