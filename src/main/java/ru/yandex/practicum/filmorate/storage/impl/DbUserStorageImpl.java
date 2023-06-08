@@ -142,35 +142,35 @@ public class DbUserStorageImpl implements UserStorage {
     @Override
     @Transactional
     public List<Film> findRecommendationsFilms(Long userId) {
-        String sqlQueryGetRecommendationsFilms = "with user_likes_CTE as (select FILM_ID,\n" +
-                "                               USER_ID\n" +
-                "                        from LIKES_FILMS\n" +
-                "                        where USER_ID = " + userId + "),\n" +
-                "     most_intersection_user_CTE as (select AL.USER_ID,\n" +
-                "                                           count(*) as total\n" +
-                "                                    from LIKES_FILMS AL\n" +
-                "                                             inner join user_likes_CTE UL on UL.FILM_ID = AL.FILM_ID\n" +
-                "                                                    and NOT AL.USER_ID = UL.USER_ID\n" +
-                "                                    group by AL.USER_ID\n" +
-                "                                    order by total desc\n" +
-                "                                    limit 1),\n" +
-                "     another_user_films_CTE as (select FILM_ID,\n" +
-                "                                       FL.USER_ID\n" +
-                "                                from LIKES_FILMS FL\n" +
-                "                                         inner join most_intersection_user_CTE MIU on FL.USER_ID = MIU.USER_ID),\n" +
-                "     recommended_films_CTE as (select AUF.FILM_ID\n" +
-                "                               from another_user_films_CTE AUF\n" +
-                "                                        left join user_likes_CTE UL on UL.FILM_ID = AUF.FILM_ID\n" +
-                "                               where UL.USER_ID IS NULL)\n" +
-                "select F.FILM_ID        as id,\n" +
-                "       FILM_NAME        as name,\n" +
-                "       FILM_DESCRIPTION as description,\n" +
-                "       RATING_NAME      as mpa,\n" +
-                "       RELEASE_DATE     as releaseDate,\n" +
-                "       DURATION         as duration\n" +
-                "from FILMS F\n" +
-                "         left join RATINGS R on R.RATING_ID = F.RATING_ID\n" +
-                "         inner join recommended_films_CTE RFC on F.FILM_ID = RFC.FILM_ID\n" +
+        String sqlQueryGetRecommendationsFilms = "with user_likes_CTE as (select FILM_ID, " +
+                "                               USER_ID " +
+                "                        from LIKES_FILMS " +
+                "                        where USER_ID = " + userId + "), " +
+                "     most_intersection_user_CTE as (select AL.USER_ID, " +
+                "                                           count(*) as total " +
+                "                                    from LIKES_FILMS AL " +
+                "                                             inner join user_likes_CTE UL on UL.FILM_ID = AL.FILM_ID " +
+                "                                                    and NOT AL.USER_ID = UL.USER_ID " +
+                "                                    group by AL.USER_ID " +
+                "                                    order by total desc " +
+                "                                    limit 1), " +
+                "     another_user_films_CTE as (select FILM_ID, " +
+                "                                       FL.USER_ID " +
+                "                                from LIKES_FILMS FL " +
+                "                                         inner join most_intersection_user_CTE MIU on FL.USER_ID = MIU.USER_ID), " +
+                "     recommended_films_CTE as (select AUF.FILM_ID " +
+                "                               from another_user_films_CTE AUF " +
+                "                                        left join user_likes_CTE UL on UL.FILM_ID = AUF.FILM_ID " +
+                "                               where UL.USER_ID IS NULL) " +
+                "select F.FILM_ID        as id, " +
+                "       FILM_NAME        as name, " +
+                "       FILM_DESCRIPTION as description, " +
+                "       RATING_NAME      as mpa, " +
+                "       RELEASE_DATE     as releaseDate, " +
+                "       DURATION         as duration " +
+                "from FILMS F " +
+                "         left join RATINGS R on R.RATING_ID = F.RATING_ID " +
+                "         inner join recommended_films_CTE RFC on F.FILM_ID = RFC.FILM_ID " +
                 "order by id";
 
         List<Film> films = jdbcTemplate.query(sqlQueryGetRecommendationsFilms, Mapper::mapRowToFilm);
