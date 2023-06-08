@@ -1,5 +1,8 @@
 package ru.yandex.practicum.filmorate.storage.mapper;
 
+import ru.yandex.practicum.filmorate.model.Event;
+import ru.yandex.practicum.filmorate.model.EventOperation;
+import ru.yandex.practicum.filmorate.model.EventType;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.Mpa;
@@ -37,5 +40,17 @@ public class Mapper {
                 resultSet.getString("email"),
                 resultSet.getDate("birthday").toLocalDate()
         );
+    }
+
+    public static Event mapRowToEvent(ResultSet resultSet, int rowNum) throws SQLException {
+        Event event = new Event();
+        event.setEventId(resultSet.getLong("EVENT_ID"));
+        event.setEntityId(resultSet.getLong("ENTITY_ID"));
+        event.setUserId(resultSet.getLong("USER_ID"));
+        event.setTimestamp(resultSet.getLong("EVENT_TIMESTAMP"));
+        event.setEventType(EventType.valueOf(resultSet.getString("EVENT_TYPE")));
+        event.setOperation(EventOperation.valueOf(resultSet.getString("EVENT_OPERATION")));
+
+        return event;
     }
 }

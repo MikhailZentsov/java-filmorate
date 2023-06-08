@@ -5,6 +5,7 @@ import ru.yandex.practicum.filmorate.exception.FilmAlreadyExistsException;
 import ru.yandex.practicum.filmorate.exception.FilmNotFoundException;
 import ru.yandex.practicum.filmorate.exception.UserNotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.service.EventService;
 import ru.yandex.practicum.filmorate.service.FilmService;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
@@ -16,11 +17,12 @@ import java.util.List;
 public class DbFilmServiceImpl implements FilmService {
     private final FilmStorage filmStorage;
     private final UserStorage userStorage;
+    private final EventService eventService;
 
-    public DbFilmServiceImpl(FilmStorage filmStorage,
-                             UserStorage userStorage) {
+    public DbFilmServiceImpl(FilmStorage filmStorage, UserStorage userStorage, EventService eventService) {
         this.filmStorage = filmStorage;
         this.userStorage = userStorage;
+        this.eventService = eventService;
     }
 
     @Override
@@ -60,7 +62,9 @@ public class DbFilmServiceImpl implements FilmService {
                 "Пользователь с ID %s не найден", idUser)));
         filmStorage.getById(idFilm).orElseThrow(() -> new FilmNotFoundException(String.format(
                 "Фильм с ID %s не найден", idFilm)));
+
         filmStorage.creatLike(idFilm, idUser);
+        eventService.createAddLikeEvent(idUser, idFilm);
     }
 
     @Override
@@ -69,6 +73,8 @@ public class DbFilmServiceImpl implements FilmService {
                 "Пользователь с ID %s не найден", idUser)));
         filmStorage.getById(idFilm).orElseThrow(() -> new FilmNotFoundException(String.format(
                 "Фильм с ID %s не найден", idFilm)));
+
         filmStorage.removeLike(idFilm, idUser);
+        eventService.createRemoveLikeEvent(idUser, idFilm);
     }
 }

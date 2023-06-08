@@ -108,7 +108,7 @@ public class DbFilmStorageImpl implements FilmStorage {
                 .withTableName("FILMS")
                 .usingGeneratedKeyColumns("FILM_ID");
 
-        Long filmId = simpleJdbcInsert.executeAndReturnKey(film.toMap()).longValue();
+        long filmId = simpleJdbcInsert.executeAndReturnKey(film.toMap()).longValue();
 
         String sqlQueryAddGenres = "insert into GENRES_FILMS (FILM_ID, GENRE_ID) " +
                 "values (?, ?)";
@@ -127,7 +127,9 @@ public class DbFilmStorageImpl implements FilmStorage {
             }
         });
 
-        return getById(filmId);
+        film.setId(filmId);
+
+        return Optional.of(film);
     }
 
     @Override
@@ -141,16 +143,13 @@ public class DbFilmStorageImpl implements FilmStorage {
                 "    DURATION = ? " +
                 "where FILM_ID = ?";
 
-        try {
-            jdbcTemplate.update(sqlQueryUpdateFilms,
+        if(jdbcTemplate.update(sqlQueryUpdateFilms,
                     film.getName(),
                     film.getDescription(),
                     film.getMpa().getId(),
                     film.getReleaseDate(),
                     film.getDuration(),
-                    film.getId()
-            );
-        } catch (DataAccessException e) {
+                    film.getId()) == 0) {
             return Optional.empty();
         }
 
@@ -176,10 +175,11 @@ public class DbFilmStorageImpl implements FilmStorage {
             }
         });
 
-        return getById(film.getId());
+        return Optional.of(film);
     }
 
     @Override
+    @Transactional
     public List<Film> getPopularFilms(Long count) {
         String sqlQueryGetPopularFilms = "select F.FILM_ID as id, " +
                 "       FILM_DESCRIPTION as description, " +
@@ -222,6 +222,7 @@ public class DbFilmStorageImpl implements FilmStorage {
     }
 
     @Override
+    @Transactional
     public void creatLike(Long idFilm, Long idUser) {
         SimpleJdbcInsert simpleJdbcInsert = new SimpleJdbcInsert(jdbcTemplate)
                 .withTableName("LIKES_FILMS");
@@ -234,6 +235,7 @@ public class DbFilmStorageImpl implements FilmStorage {
     }
 
     @Override
+    @Transactional
     public void removeLike(Long idFilm, Long idUser) {
         String sqlQueryDeleteLikes = "delete from LIKES_FILMS " +
                 "where FILM_ID = ? AND USER_ID = ?";

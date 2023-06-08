@@ -3,19 +3,25 @@ package ru.yandex.practicum.filmorate.service.impl;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.UserAlreadyExistsException;
 import ru.yandex.practicum.filmorate.exception.UserNotFoundException;
+import ru.yandex.practicum.filmorate.model.Event;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.service.EventService;
 import ru.yandex.practicum.filmorate.service.UserService;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
 public class DbUserServiceImpl implements UserService {
     private final UserStorage userStorage;
+    private final EventService eventService;
 
-    public DbUserServiceImpl(UserStorage userStorage) {
+    public DbUserServiceImpl(UserStorage userStorage, EventService eventService) {
         this.userStorage = userStorage;
+        this.eventService = eventService;
     }
 
     public List<User> getUsers() {
@@ -25,25 +31,25 @@ public class DbUserServiceImpl implements UserService {
     public User getUser(Long id) {
         return userStorage.getById(id).orElseThrow(() ->
                 new UserNotFoundException(String.format(
-                    "Пользователь с ID %s не найден", id)));
+                        "Пользователь с ID %s не найден", id)));
     }
 
     public User addUser(User user) {
         return userStorage.saveOne(normalizeNameUser(user)).orElseThrow(() ->
                 new UserAlreadyExistsException(String.format(
-                    "Пользователь с ID %s уже существует", user.getId())));
+                        "Пользователь с ID %s уже существует", user.getId())));
     }
 
     public User updateUser(User user) {
         return userStorage.updateOne(normalizeNameUser(user)).orElseThrow(() ->
                 new UserNotFoundException(String.format(
-                    "Пользователь с ID %s не найден", user.getId())));
+                        "Пользователь с ID %s не найден", user.getId())));
     }
 
     public List<User> getFriends(Long id) {
         userStorage.getById(id).orElseThrow(() ->
                 new UserNotFoundException(String.format(
-                    "Пользователь с ID %s не найден", id)));
+                        "Пользователь с ID %s не найден", id)));
 
         return userStorage.findAllFriendsById(id).orElse(new ArrayList<>());
     }
@@ -51,32 +57,38 @@ public class DbUserServiceImpl implements UserService {
     public List<User> addFriend(Long idUser, Long idFriend) {
         userStorage.getById(idUser).orElseThrow(() ->
                 new UserNotFoundException(String.format(
-                    "Пользователь с ID %s не найден", idUser)));
-         userStorage.getById(idFriend).orElseThrow(() ->
+                        "Пользователь с ID %s не найден", idUser)));
+        userStorage.getById(idFriend).orElseThrow(() ->
                 new UserNotFoundException(String.format(
-                    "Пользователь с ID %s не найден", idFriend)));
+                        "Пользователь с ID %s не найден", idFriend)));
 
-        return userStorage.saveOneFriend(idUser, idFriend).orElse(new ArrayList<>());
+        List<User> friends = userStorage.saveOneFriend(idUser, idFriend).orElse(new ArrayList<>());
+        eventService.createAddFriend(idUser, idFriend);
+
+        return friends;
     }
 
     public List<User> removeFriend(Long idUser, Long idFriend) {
         userStorage.getById(idUser).orElseThrow(() ->
                 new UserNotFoundException(String.format(
-                    "Пользователь с ID %s не найден", idUser)));
+                        "Пользователь с ID %s не найден", idUser)));
         userStorage.getById(idFriend).orElseThrow(() ->
                 new UserNotFoundException(String.format(
-                    "Пользователь с ID %s не найден", idFriend)));
+                        "Пользователь с ID %s не найден", idFriend)));
 
-        return userStorage.deleteOneFriend(idUser, idFriend).orElse(new ArrayList<>());
+        List<User> friends = userStorage.deleteOneFriend(idUser, idFriend).orElse(new ArrayList<>());
+        eventService.createRemoveFriend(idUser, idFriend);
+
+        return friends;
     }
 
     public List<User> getCommonFriends(Long idUser, Long idFriend) {
         userStorage.getById(idUser).orElseThrow(() ->
                 new UserNotFoundException(String.format(
-                    "Пользователь с ID %s не найден", idUser)));
+                        "Пользователь с ID %s не найден", idUser)));
         userStorage.getById(idFriend).orElseThrow(() ->
                 new UserNotFoundException(String.format(
-                    "Пользователь с ID %s не найден", idFriend)));
+                        "Пользователь с ID %s не найден", idFriend)));
 
         List<User> userFriends = userStorage.findAllFriendsById(idUser).orElse(new ArrayList<>());
 
@@ -91,6 +103,11 @@ public class DbUserServiceImpl implements UserService {
         return userFriends.stream()
                 .sorted(Comparator.comparingLong(User::getId))
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<Event> getFeed(Long id) {
+        return eventService.findEventsByUserId(id);
     }
 
     private User normalizeNameUser(User user) {

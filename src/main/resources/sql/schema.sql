@@ -22,7 +22,7 @@ create table if not exists PUBLIC.FILMS
     RELEASE_DATE     TIMESTAMP,
     DURATION         INTEGER,
     constraint FK_FILM_RATING
-        foreign key (RATING_ID) references PUBLIC.RATINGS
+        foreign key (RATING_ID) references PUBLIC.RATINGS on delete set null
 );
 
 create table if not exists PUBLIC.GENRES_FILMS
@@ -32,9 +32,9 @@ create table if not exists PUBLIC.GENRES_FILMS
     constraint PK_GENRE_FILMS
         primary key (FILM_ID, GENRE_ID),
     constraint FK_GENRE_FILMS_FILM
-        foreign key (FILM_ID) references PUBLIC.FILMS,
+        foreign key (FILM_ID) references PUBLIC.FILMS on delete cascade,
     constraint FK_GENRE_FILMS_GENRE
-        foreign key (GENRE_ID) references PUBLIC.GENRES
+        foreign key (GENRE_ID) references PUBLIC.GENRES on delete cascade
 );
 
 create table if not exists PUBLIC.USERS
@@ -54,9 +54,9 @@ create table if not exists PUBLIC.RELATIONSHIP_USERS
     constraint PK_RELATIONSHIP_USERS
         primary key (USER_ID, FRIEND_ID),
     constraint FK_RELATIONSHIP_USERS_USER_ID
-        foreign key (USER_ID) references PUBLIC.USERS,
+        foreign key (USER_ID) references PUBLIC.USERS on delete cascade,
     constraint FK_RELATIONSHIP_USERS_FRIEND_ID
-        foreign key (FRIEND_ID) references PUBLIC.USERS
+        foreign key (FRIEND_ID) references PUBLIC.USERS on delete cascade
 );
 
 create table if not exists PUBLIC.LIKES_FILMS
@@ -66,7 +66,20 @@ create table if not exists PUBLIC.LIKES_FILMS
     constraint PK_LIKES_FILMS
         primary key (FILM_ID, USER_ID),
     constraint FK_LIKES_FILMS_FILM_ID
-        foreign key (FILM_ID) references PUBLIC.FILMS,
+        foreign key (FILM_ID) references PUBLIC.FILMS on delete cascade,
     constraint FK_LIKES_FILMS_USER_ID
-        foreign key (USER_ID) references PUBLIC.USERS
+        foreign key (USER_ID) references PUBLIC.USERS on delete cascade
+);
+
+create table if not exists PUBLIC.EVENTS
+(
+    EVENT_ID        BIGINT auto_increment
+        primary key,
+    USER_ID         BIGINT                            not null,
+    ENTITY_ID       BIGINT                            not null,
+    EVENT_TIMESTAMP BIGINT                            not null,
+    EVENT_TYPE      ENUM ('LIKE', 'REVIEW', 'FRIEND') not null,
+    EVENT_OPERATION ENUM ('REMOVE', 'ADD', 'UPDATE')  not null,
+    constraint FK_EVENTS_USER_ID
+        foreign key (USER_ID) references PUBLIC.USERS on delete cascade
 );
