@@ -56,8 +56,54 @@ public class FilmController {
         filmService.removeLike(id, userId);
     }
 
-    @GetMapping("/popular")
+    /*@GetMapping("/popular")
     public List<Film> getTopFilms(@RequestParam(required = false) Long count) {
         return filmService.getTopFilms(count);
+    }*/
+    //GET /films/popular?count={limit}&genreId={genreId}&year={year}
+   /* @GetMapping("/popular")
+    public Long getMostPopulars(@RequestParam(required = false) Long count,
+                                @RequestParam(required = false) Integer genreId,
+                                @RequestParam(required = false) Integer year) {
+        Long result = 0L;
+        if (count != null) {
+            result += count;
+        }
+        if (genreId != null) {
+            result += genreId;
+        }
+        if (year != null) {
+            result += year;
+        }
+        return result;
+    }*/
+
+    @GetMapping(value = "/popular", params = {"gid", "ye"})
+    public String getStuff(@RequestParam(value = "gid") String gid,
+                           @RequestParam(value = "ye", required = false) String ye) {
+
+        return gid + ye;
     }
+
+    @GetMapping(value = "/popular", params = {"gid"})
+    public String getStuff(@RequestParam(value = "gid") String gid) {
+
+        // do stuff for bar
+        return gid;
+    }
+
+    /*@GetMapping(value = "/popular", params = {"foo", "bar"})
+    public String getStuff(@RequestParam(value = "foo") String foo,
+                           @RequestParam(value = "bar", required = false) String bar) {
+
+        return foo + bar;
+    }
+
+    @GetMapping(value = "/popular", params = {"bar"})
+    public String getStuff(@RequestParam(value = "bar") String bar) {
+
+        // do stuff for bar
+        return bar;
+    }*/
+
 }
