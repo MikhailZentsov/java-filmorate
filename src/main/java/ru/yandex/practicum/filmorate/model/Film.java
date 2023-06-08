@@ -34,6 +34,8 @@ public class Film {
 
     private Set<Genre> genres;
 
+    private Set<Director> directors;
+
     public Film(long id, String name, String description, LocalDate releaseDate, Integer duration, Mpa mpa) {
         this.id = id;
         this.name = name;
@@ -42,6 +44,7 @@ public class Film {
         this.duration = duration;
         this.mpa = mpa;
         genres = new LinkedHashSet<>();
+        directors = new LinkedHashSet<>();
     }
 
     public Map<String, Object> toMap() {

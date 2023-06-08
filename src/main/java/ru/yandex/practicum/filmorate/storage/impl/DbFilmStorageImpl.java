@@ -6,6 +6,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
+import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
@@ -13,12 +14,7 @@ import ru.yandex.practicum.filmorate.storage.mapper.Mapper;
 
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -95,8 +91,14 @@ public class DbFilmStorageImpl implements FilmStorage {
                 "order by G.GENRE_ID";
 
         List<Genre> genresFilms = jdbcTemplate.query(sqlQueryGetGenres, Mapper::mapRowToGenre, id);
-
         film.setGenres(new LinkedHashSet<>(genresFilms));
+
+        String sqlQueryGetDirectors = "select DIRECTOR_ID as id, DIRECTOR_NAME as name " +
+                "from DIRECTORS " +
+                "where DIRECTOR_ID = ?";
+
+        List<Director> directorsFilms = jdbcTemplate.query(sqlQueryGetDirectors, Mapper::mapToRowDirector, id);
+        film.setDirectors(new HashSet<>(directorsFilms));
 
         return Optional.of(film);
     }
@@ -124,6 +126,24 @@ public class DbFilmStorageImpl implements FilmStorage {
             @Override
             public int getBatchSize() {
                 return genres.size();
+            }
+        });
+
+        List<Director> directors = new ArrayList<>(film.getDirectors());
+
+        String sqlQueryAddDirectors = "insert into DIRECTORS_FILMS (DIRECTOR_ID, FILM_ID) " +
+                "values (?, ?)";
+
+        jdbcTemplate.batchUpdate(sqlQueryAddDirectors, new BatchPreparedStatementSetter() {
+            @Override
+            public void setValues(PreparedStatement ps, int i) throws SQLException {
+                ps.setLong(1, filmId);
+                ps.setLong(2, directors.get(i).getId());
+            }
+
+            @Override
+            public int getBatchSize() {
+                return directors.size();
             }
         });
 
