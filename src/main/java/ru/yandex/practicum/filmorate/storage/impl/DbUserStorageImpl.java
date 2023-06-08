@@ -141,11 +141,11 @@ public class DbUserStorageImpl implements UserStorage {
 
     @Override
     @Transactional
-    public List<Film> findRecommendationsFilms(Long id) {
+    public List<Film> findRecommendationsFilms(Long userId) {
         String sqlQueryGetRecommendationsFilms = "with user_likes_CTE as (select FILM_ID,\n" +
                 "                               USER_ID\n" +
                 "                        from LIKES_FILMS\n" +
-                "                        where USER_ID = " + id + "),\n" +
+                "                        where USER_ID = " + userId + "),\n" +
                 "     most_intersection_user_CTE as (select AL.USER_ID,\n" +
                 "                                           count(*) as total\n" +
                 "                                    from LIKES_FILMS AL\n" +

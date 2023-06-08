@@ -265,7 +265,7 @@ class FilmorateApplicationTests {
 	}
 
 	@Test
-	void testAddFriend() {
+	void testSaveOneFriend() {
 		userStorage.saveOne(userOne);
 		userStorage.saveOne(userTwo);
 
@@ -290,7 +290,7 @@ class FilmorateApplicationTests {
 	}
 
 	@Test
-	void testRemoveFriend() {
+	void testDeleteOneFriend() {
 		userStorage.saveOne(userOne);
 		userStorage.saveOne(userTwo);
 		userStorage.saveOneFriend(1L, 2L);
@@ -299,5 +299,41 @@ class FilmorateApplicationTests {
 
 		assertTrue(friendsUserOne.isPresent());
 		assertTrue(friendsUserOne.get().isEmpty());
+	}
+
+	@Test
+	void testFindRecommendationsFilms() {
+		userStorage.saveOne(userOne);
+		userStorage.saveOne(userTwo);
+		filmStorage.saveOne(filmOne);
+		filmStorage.saveOne(filmTwo);
+		filmOne.setName("Some new film");
+		filmStorage.saveOne(filmOne);
+
+		List<Film> emptyListFilms = userStorage.findRecommendationsFilms(1L);
+
+		assertTrue(emptyListFilms.isEmpty());
+
+		filmStorage.creatLike(1L, 1L);
+		filmStorage.creatLike(2L, 1L);
+		filmStorage.creatLike(1L, 2L);
+		filmStorage.creatLike(3L, 2L);
+
+		List<Film> oneFilmRecommended = userStorage.findRecommendationsFilms(1L);
+
+		assertThat(oneFilmRecommended)
+				.hasSize(1);
+		assertThat(oneFilmRecommended.get(0))
+				.hasFieldOrPropertyWithValue("id", 3L)
+				.hasFieldOrPropertyWithValue("name", "Some new film")
+				.hasFieldOrPropertyWithValue("releaseDate", LocalDate.of(1949, 1, 1))
+				.hasFieldOrPropertyWithValue("duration", 100)
+				.hasFieldOrPropertyWithValue("mpa", Mpa.G);
+
+		filmStorage.creatLike(3L, 1L);
+
+		List<Film> emptyListFilmsAfterLike = userStorage.findRecommendationsFilms(1L);
+
+		assertTrue(emptyListFilmsAfterLike.isEmpty());
 	}
 }

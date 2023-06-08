@@ -198,7 +198,9 @@ public class DbFilmStorageImpl implements FilmStorage {
                 "       R.RATING_NAME " +
                 "order by count(FL.USER_ID) desc " +
                 "limit ?";
+
         List<Film> films = jdbcTemplate.query(sqlQueryGetPopularFilms, Mapper::mapRowToFilm, count);
+
         if (!films.isEmpty()) {
             Map<Long, Film> mapFilms = films.stream().collect(Collectors.toMap(Film::getId, Function.identity()));
             String sqlQueryGetAllGenres = "select FG.FILM_ID as filmId, " +

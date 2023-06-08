@@ -95,12 +95,12 @@ public class DbUserServiceImpl implements UserService {
     }
 
     @Override
-    public List<Film> getRecommendations(Long id) {
-        userStorage.getById(id).orElseThrow(() ->
+    public List<Film> getRecommendations(Long userId) {
+        userStorage.getById(userId).orElseThrow(() ->
                 new UserNotFoundException(String.format(
-                        "Пользователь с ID %s не найден", id)));
+                        "Пользователь с ID %s не найден", userId)));
 
-        return userStorage.findRecommendationsFilms(id);
+        return userStorage.findRecommendationsFilms(userId);
     }
 
     private User normalizeNameUser(User user) {
