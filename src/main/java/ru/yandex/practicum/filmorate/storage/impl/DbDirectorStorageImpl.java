@@ -5,6 +5,7 @@ import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.storage.DirectorStorage;
 import ru.yandex.practicum.filmorate.storage.mapper.Mapper;
@@ -19,6 +20,7 @@ public class DbDirectorStorageImpl implements DirectorStorage {
     private final JdbcTemplate jdbcTemplate;
 
     @Override
+    @Transactional
     public Optional<List<Director>> getDirectors() {
         String sqlQueryGetUsers = "select DIRECTOR_ID as id, " +
                 "DIRECTOR_NAME as name " +
@@ -30,6 +32,7 @@ public class DbDirectorStorageImpl implements DirectorStorage {
     }
 
     @Override
+    @Transactional
     public Optional<Director> getDirector(long id) {
         String sqlQueryGetDirector = "select DIRECTOR_ID as id, " +
                 " DIRECTOR_NAME as name " +
@@ -50,32 +53,35 @@ public class DbDirectorStorageImpl implements DirectorStorage {
     }
 
     @Override
+    @Transactional
     public Optional<Director> createDirector(Director director) {
         SimpleJdbcInsert simpleJdbcInsert = new SimpleJdbcInsert(jdbcTemplate)
                 .withTableName("DIRECTORS")
                 .usingGeneratedKeyColumns("DIRECTOR_ID");
 
         long directorId = simpleJdbcInsert.executeAndReturnKey(director.toMap()).longValue();
-        return getDirector(directorId);
+
+        director.setId(directorId);
+        return Optional.of(director);
     }
 
     @Override
+    @Transactional
     public Optional<Director> updateDirector(Director director) {
         String sqlQueryUpdateDirector = "update DIRECTORS set DIRECTOR_NAME = ? where DIRECTOR_ID = ?";
 
-        try {
-            jdbcTemplate.update(sqlQueryUpdateDirector,
+        if (jdbcTemplate.update(sqlQueryUpdateDirector,
                     director.getName(),
                     director.getId()
-            );
-        } catch (DataAccessException e) {
+            ) == 0) {
             return Optional.empty();
         }
 
-        return getDirector(director.getId());
+        return Optional.of(director);
     }
 
     @Override
+    @Transactional
     public void removeDirector(long id) {
         String sqlQueryRemoveDirector = "delete from DIRECTORS " +
                 "where DIRECTOR_ID = ?";

@@ -56,22 +56,19 @@ public class DbFilmStorageImpl implements FilmStorage {
                         Genre.valueOf(t.get("genreName").toString())
                 ));
 
-        String sqlQueryGetDirectors = "select DIRECTOR_ID as id, DIRECTOR_NAME as name " +
-                "from DIRECTORS ";
+        String sqlQueryGetDirectors = "select FILM_ID as filmId, " +
+                "       D.DIRECTOR_ID as directorId, " +
+                "       DIRECTOR_NAME as directorName " +
+                "from DIRECTORS_FILMS " +
+                "    inner join DIRECTORS D on D.DIRECTOR_ID = DIRECTORS_FILMS.DIRECTOR_ID";
 
         List<Map<String, Object>> directorsFilms = jdbcTemplate.queryForList(sqlQueryGetDirectors);
 
-        directorsFilms.forEach(t -> {
-            long directorId = Long.parseLong(t.get("id").toString());
-            String directorName = t.get("name").toString();
-            Director director = new Director(directorId, directorName);
-
-            mapFilms.values().forEach(film -> {
-                if (film.getDirectors().contains(directorId)) {
-                    film.getDirectors().add(director);
-                }
-            });
-        });
+        directorsFilms.forEach(t -> mapFilms.get(Long.parseLong(t.get("filmId").toString())).getDirectors().add(
+                new Director(
+                        Long.parseLong(t.get("directorId").toString()),
+                        t.get("directorName").toString())
+        ));
 
         return Optional.of(films);
     }
@@ -108,9 +105,11 @@ public class DbFilmStorageImpl implements FilmStorage {
         List<Genre> genresFilms = jdbcTemplate.query(sqlQueryGetGenres, Mapper::mapRowToGenre, id);
         film.setGenres(new LinkedHashSet<>(genresFilms));
 
-        String sqlQueryGetDirectors = "select DIRECTOR_ID as id, DIRECTOR_NAME as name " +
-                "from DIRECTORS " +
-                "where DIRECTOR_ID = ?";
+        String sqlQueryGetDirectors = "select D.DIRECTOR_ID as id, " +
+                "       DIRECTOR_NAME as name " +
+                "from DIRECTORS_FILMS " +
+                "    inner join DIRECTORS D on D.DIRECTOR_ID = DIRECTORS_FILMS.DIRECTOR_ID " +
+                "where FILM_ID = ?";
 
         List<Director> directorsFilms = jdbcTemplate.query(sqlQueryGetDirectors, Mapper::mapToRowDirector, id);
         film.setDirectors(new HashSet<>(directorsFilms));
@@ -152,8 +151,8 @@ public class DbFilmStorageImpl implements FilmStorage {
         jdbcTemplate.batchUpdate(sqlQueryAddDirectors, new BatchPreparedStatementSetter() {
             @Override
             public void setValues(PreparedStatement ps, int i) throws SQLException {
-                ps.setLong(1, filmId);
-                ps.setLong(2, directors.get(i).getId());
+                ps.setLong(1, directors.get(i).getId());
+                ps.setLong(2, filmId);
             }
 
             @Override
@@ -223,13 +222,13 @@ public class DbFilmStorageImpl implements FilmStorage {
         jdbcTemplate.batchUpdate(sqlQueryAddDirectors, new BatchPreparedStatementSetter() {
             @Override
             public void setValues(PreparedStatement ps, int i) throws SQLException {
-                ps.setLong(1, film.getId());
-                ps.setLong(2, directors.get(i).getId());
+                ps.setLong(1, directors.get(i).getId());
+                ps.setLong(2, film.getId());
             }
 
             @Override
             public int getBatchSize() {
-                return 0;
+                return directors.size();
             }
         });
 
