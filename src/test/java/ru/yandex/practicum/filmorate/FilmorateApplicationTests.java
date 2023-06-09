@@ -300,4 +300,19 @@ class FilmorateApplicationTests {
 		assertTrue(friendsUserOne.isPresent());
 		assertTrue(friendsUserOne.get().isEmpty());
 	}
+	@Test
+	void deleteFilmById() {
+		filmStorage.saveOne(filmOne);
+		Optional<List<Film>> filmsOptional = filmStorage.findAll();
+
+		assertTrue(filmsOptional.isPresent());
+		assertEquals(filmsOptional.get().size(), 1);
+
+		filmStorage.deleteFilmById(1);
+
+		filmsOptional = filmStorage.findAll();
+
+		assertTrue(filmsOptional.isPresent());
+		assertEquals(filmsOptional.get().size(), 0);
+	}
 }
