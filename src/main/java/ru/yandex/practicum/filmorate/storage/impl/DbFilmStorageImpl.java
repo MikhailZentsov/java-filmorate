@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.storage.impl;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.BatchPreparedStatementSetter;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -19,13 +20,10 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Repository
+@RequiredArgsConstructor
 public class DbFilmStorageImpl implements FilmStorage {
 
     private final JdbcTemplate jdbcTemplate;
-
-    public DbFilmStorageImpl(JdbcTemplate jdbcTemplate) {
-        this.jdbcTemplate = jdbcTemplate;
-    }
 
     @Override
     @Transactional
@@ -66,9 +64,8 @@ public class DbFilmStorageImpl implements FilmStorage {
         directorsFilms.forEach(t -> {
             long directorId = Long.parseLong(t.get("id").toString());
             String directorName = t.get("name").toString();
-            Director director = new Director(directorId, directorName); // Замените на свой класс режиссера
+            Director director = new Director(directorId, directorName);
 
-            // Найти фильм по идентификатору режиссера и добавить режиссера к нему
             mapFilms.values().forEach(film -> {
                 if (film.getDirectors().contains(directorId)) {
                     film.getDirectors().add(director);
@@ -211,6 +208,28 @@ public class DbFilmStorageImpl implements FilmStorage {
             @Override
             public int getBatchSize() {
                 return genres.size();
+            }
+        });
+
+        // новое
+        String sqlQueryDeleteDirectors = "delete from DIRECTORS_FILMS " +
+                "where FILM_ID = ?";
+        jdbcTemplate.update(sqlQueryDeleteDirectors, film.getId());
+
+        String sqlQueryAddDirectors = "insert into DIRECTORS_FILMS (DIRECTOR_ID, FILM_ID) " +
+                "values (?, ?)";
+
+        List<Director> directors = new ArrayList<>(film.getDirectors());
+        jdbcTemplate.batchUpdate(sqlQueryAddDirectors, new BatchPreparedStatementSetter() {
+            @Override
+            public void setValues(PreparedStatement ps, int i) throws SQLException {
+                ps.setLong(1, film.getId());
+                ps.setLong(2, directors.get(i).getId());
+            }
+
+            @Override
+            public int getBatchSize() {
+                return 0;
             }
         });
 

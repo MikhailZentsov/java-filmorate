@@ -13,7 +13,7 @@ public class Director {
 
     private long id;
 
-    @NotBlank
+    @NotBlank(message = "Некорректное имя режиссера")
     private String name;
 
     public Director(long id, String name) {

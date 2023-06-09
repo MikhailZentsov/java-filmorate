@@ -52,9 +52,11 @@ create table if not exists PUBLIC.DIRECTORS_FILMS
     constraint PK_DIRECTORS_FILM
         primary key (DIRECTOR_ID, FILM_ID),
     constraint FK_DIRECTORS_FILMS_DIRECTOR_ID
-        foreign key (DIRECTOR_ID) references PUBLIC.DIRECTORS,
+        foreign key (DIRECTOR_ID) references PUBLIC.DIRECTORS ON
+            DELETE CASCADE ON UPDATE CASCADE,
     constraint FK_DIRECTORS_FILMS_FILM_ID
-        foreign key (FILM_ID) references PUBLIC.FILMS
+        foreign key (FILM_ID) references PUBLIC.FILMS ON
+            DELETE CASCADE ON UPDATE CASCADE
 );
 
 create table if not exists PUBLIC.USERS
