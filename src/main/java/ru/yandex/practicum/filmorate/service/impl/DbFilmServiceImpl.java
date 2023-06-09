@@ -48,10 +48,22 @@ public class DbFilmServiceImpl implements FilmService {
 
     @Override
     public List<Film> getTopFilms(Long count) {
-        if (count == null) {
-            count = 10L;
-        }
         return filmStorage.getPopularFilms(count);
+    }
+
+    @Override
+    public List<Film> getTopFilms(Long count, Integer genreId) {
+        return filmStorage.getPopularFilms(count, genreId);
+    }
+
+    @Override
+    public List<Film> getTopFilms(Long count, String year) {
+        return null;
+    }
+
+    @Override
+    public List<Film> getTopFilms(Long count, Integer genreId, String year) {
+        return filmStorage.getPopularFilms(count, genreId, year);
     }
 
     @Override

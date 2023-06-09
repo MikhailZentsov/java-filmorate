@@ -62,20 +62,17 @@ public class FilmController {
     }*/
     //GET /films/popular?count={limit}&genreId={genreId}&year={year}
     @GetMapping("/popular")
-    public Long getMostPopulars(@RequestParam(defaultValue = "10", required = false) Long count,
-                                @RequestParam(required = false) Integer genreId,
-                                @RequestParam(required = false) Integer year) {
-        Long result = 0L;
+    public List<Film> getMostPopulars(@RequestParam(defaultValue = "10", required = false) Long count,
+                                      @RequestParam(required = false) Integer genreId,
+                                      @RequestParam(required = false) String year) {
 
-        result += count;
         if (genreId != null && year != null) {
-            result += genreId + year;
+            return filmService.getTopFilms(count, genreId, year);
         } else if (genreId != null && year == null) {
-            result += genreId;
+            return filmService.getTopFilms(count, genreId);
         } else if (genreId == null && year != null) {
-            result += year;
+            return filmService.getTopFilms(count, year);
         }
-        return result;
-        //filmService.getTopFilms(count);
+        return filmService.getTopFilms(count);
     }
 }

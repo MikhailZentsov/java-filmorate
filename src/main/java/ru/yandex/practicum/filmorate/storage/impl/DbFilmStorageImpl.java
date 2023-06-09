@@ -207,9 +207,9 @@ public class DbFilmStorageImpl implements FilmStorage {
                     "from GENRES_FILMS FG " +
                     "    left join GENRES G2 on FG.GENRE_ID = G2.GENRE_ID " +
                     "where FG.FILM_ID IN ( " + mapFilms.keySet()
-                                                .stream()
-                                                .map(String::valueOf)
-                                                .collect(Collectors.joining(",")) + " ) " +
+                    .stream()
+                    .map(String::valueOf)
+                    .collect(Collectors.joining(",")) + " ) " +
                     "order by genreId ";
             List<Map<String, Object>> genres = jdbcTemplate.queryForList(sqlQueryGetAllGenres);
             genres.forEach(t -> mapFilms.get(Long.parseLong(t.get("filmId").toString()))
@@ -219,6 +219,21 @@ public class DbFilmStorageImpl implements FilmStorage {
         }
 
         return films;
+    }
+
+    @Override
+    public List<Film> getPopularFilms(Long count, Integer genreId) {
+        return null;
+    }
+
+    @Override
+    public List<Film> getPopularFilms(Long count, String year) {
+        return null;
+    }
+
+    @Override
+    public List<Film> getPopularFilms(Long count, Integer genreId, String year) {
+        return null;
     }
 
     @Override
