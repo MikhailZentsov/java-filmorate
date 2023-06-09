@@ -58,7 +58,7 @@ public class DbFilmServiceImpl implements FilmService {
 
     @Override
     public List<Film> getTopFilms(Long count, String year) {
-        return null;
+        return filmStorage.getPopularFilms(count, year);
     }
 
     @Override
