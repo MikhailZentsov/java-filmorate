@@ -83,7 +83,7 @@ class FilmorateApplicationTests {
         reviewTwo = new Review("Review_Two_Content",
                 true,
                 1L,
-                2L,
+                1L,
                 0L,
                 0L);
     }
@@ -109,7 +109,7 @@ class FilmorateApplicationTests {
         reviewStorage.saveReview(reviewOne);
         reviewStorage.saveReview(reviewTwo);
 
-        assertEquals(reviewStorage.findAllByFilmId(2L, 2).size(), 1);
+        assertEquals(reviewStorage.findAllByFilmId(1L, 1).size(), 1);
     }
 
     @Test
