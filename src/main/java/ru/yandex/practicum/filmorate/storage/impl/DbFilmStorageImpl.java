@@ -333,7 +333,12 @@ public class DbFilmStorageImpl implements FilmStorage {
         like.put("FILM_ID", idFilm);
         like.put("USER_ID", idUser);
 
-        simpleJdbcInsert.execute(like);
+        try {
+            simpleJdbcInsert.execute(like);
+            log.info("Лайк от пользователя ID = {} фильму ID = {} добавлен.", idUser, idFilm);
+        } catch (RuntimeException e) {
+            log.info("Лайк от пользователя ID = {} фильму ID = {} уже существует.", idUser, idFilm);
+        }
     }
 
     @Override
