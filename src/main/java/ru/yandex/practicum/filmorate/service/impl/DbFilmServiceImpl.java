@@ -1,11 +1,11 @@
 package ru.yandex.practicum.filmorate.service.impl;
 
 import org.springframework.stereotype.Service;
-import ru.yandex.practicum.filmorate.exception.FilmAlreadyExistsException;
-import ru.yandex.practicum.filmorate.exception.FilmNotFoundException;
-import ru.yandex.practicum.filmorate.exception.UserNotFoundException;
+import ru.yandex.practicum.filmorate.exception.*;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.service.EventService;
 import ru.yandex.practicum.filmorate.service.FilmService;
+import ru.yandex.practicum.filmorate.storage.DirectorStorage;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
@@ -14,13 +14,22 @@ import java.util.List;
 
 @Service
 public class DbFilmServiceImpl implements FilmService {
+
     private final FilmStorage filmStorage;
+
     private final UserStorage userStorage;
+    private final EventService eventService;
+    private final DirectorStorage directorStorage;
 
     public DbFilmServiceImpl(FilmStorage filmStorage,
-                             UserStorage userStorage) {
+                             UserStorage userStorage,
+                             DirectorStorage directorStorage,
+                             EventService eventService
+                ) {
         this.filmStorage = filmStorage;
         this.userStorage = userStorage;
+        this.eventService = eventService;
+        this.directorStorage = directorStorage;
     }
 
     @Override
@@ -47,11 +56,16 @@ public class DbFilmServiceImpl implements FilmService {
     }
 
     @Override
-    public List<Film> getTopFilms(Long count) {
-        if (count == null) {
-            count = 10L;
+    public List<Film> getTopFilms(Long count, Integer genreId, String year) {
+        if (genreId != null && year != null) {
+            return filmStorage.getPopularFilms(count, genreId, year);
+        } else if (genreId == null && year == null) {
+            return filmStorage.getPopularFilms(count);
+        } else if (genreId != null) {
+            return filmStorage.getPopularFilms(count, genreId);
+        } else {
+            return filmStorage.getPopularFilms(count, year);
         }
-        return filmStorage.getPopularFilms(count);
     }
 
     @Override
@@ -60,7 +74,9 @@ public class DbFilmServiceImpl implements FilmService {
                 "Пользователь с ID %s не найден", idUser)));
         filmStorage.getById(idFilm).orElseThrow(() -> new FilmNotFoundException(String.format(
                 "Фильм с ID %s не найден", idFilm)));
+
         filmStorage.creatLike(idFilm, idUser);
+        eventService.createAddLikeEvent(idUser, idFilm);
     }
 
     @Override
@@ -69,7 +85,40 @@ public class DbFilmServiceImpl implements FilmService {
                 "Пользователь с ID %s не найден", idUser)));
         filmStorage.getById(idFilm).orElseThrow(() -> new FilmNotFoundException(String.format(
                 "Фильм с ID %s не найден", idFilm)));
+
         filmStorage.removeLike(idFilm, idUser);
+        eventService.createRemoveLikeEvent(idUser, idFilm);
+    }
+
+    @Override
+    public List<Film> getFilmsWithQueryByTitleAndDirector(String query, List<String> by) {
+        List<String> listBy = new ArrayList<>();
+        listBy.add("title");
+        listBy.add("director");
+
+        by.retainAll(listBy);
+
+        return filmStorage.findFilmsByNameAndDirector(query, by);
+    }
+
+    @Override
+    public List<Film> getCommonFilms(Long userId, Long friendId) {
+        return filmStorage.getCommonFilms(userId, friendId);
+    }
+
+    @Override
+    public List<Film> getFilmsByDirectorSortedBy(Long directorId, String sort) {
+        if (sort.equals("likes")) {
+            return filmStorage.getFilmsByDirectorSortedByLikes(directorId, sort).orElseThrow(() ->
+                    new DirectorNotFoundException(String.format(
+                            "Директор с ID %s не существует", directorId)));
+        } else if (sort.equals("year")) {
+            return filmStorage.getFilmsByDirectorSortedByYear(directorId, sort).orElseThrow(() ->
+                    new DirectorNotFoundException(String.format(
+                            "Директор с ID %s не существует", directorId)));
+        } else {
+            throw new ValidationParamsException("Параметр sort должен быть либо likes, либо year");
+        }
     }
     @Override
     public void deleteFilmById(long filmId) {

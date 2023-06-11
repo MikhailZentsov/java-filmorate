@@ -14,6 +14,7 @@ import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.service.FilmService;
 
 import javax.validation.Valid;
+import javax.validation.constraints.NotBlank;
 import java.util.List;
 
 @RestController
@@ -57,8 +58,29 @@ public class FilmController {
     }
 
     @GetMapping("/popular")
-    public List<Film> getTopFilms(@RequestParam(required = false) Long count) {
-        return filmService.getTopFilms(count);
+    public List<Film> getMostPopulars(@RequestParam(defaultValue = "10", required = false) Long count,
+                                      @RequestParam(required = false) Integer genreId,
+                                      @RequestParam(required = false) String year) {
+        return filmService.getTopFilms(count, genreId, year);
+    }
+
+    @GetMapping("/search")
+    public List<Film> getFilmsWithQueryByTitleAndDirector(
+            @RequestParam @NotBlank String query,
+            @RequestParam List<String> by) {
+        return filmService.getFilmsWithQueryByTitleAndDirector(query, by);
+    }
+
+    @GetMapping("/director/{directorId}")
+    public List<Film> getSortedFilmsByDirector(@PathVariable("directorId") Long directorId,
+                                              @RequestParam("sortBy") String sort) {
+        return filmService.getFilmsByDirectorSortedBy(directorId, sort);
+    }
+
+    @GetMapping("/common")
+    public List<Film> getCommonFilms(@RequestParam(name = "userId") long userId,
+                                     @RequestParam(name = "friendId") long friendId) {
+        return filmService.getCommonFilms(userId, friendId);
     }
     @DeleteMapping("{filmId}")
     public void delete(@PathVariable("filmId") long filmId) {
