@@ -42,4 +42,16 @@ public class Mapper {
                 resultSet.getString("name")
         );
     }
+
+    public static Review mapRowToReview(ResultSet resultSet, int rowNum) throws SQLException {
+        Review review = new Review();
+        review.setReviewId(resultSet.getLong("REVIEW_ID"));
+        review.setContent(resultSet.getString("CONTENT"));
+        review.setIsPositive(resultSet.getBoolean("IS_POSITIVE"));
+        review.setUserId(resultSet.getLong("USER_ID"));
+        review.setFilmId(resultSet.getLong("FILM_ID"));
+        review.setUseful(resultSet.getLong("USEFUL"));
+
+        return review;
+    }
 }

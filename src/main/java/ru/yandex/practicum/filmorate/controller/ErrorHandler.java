@@ -15,7 +15,10 @@ public class ErrorHandler {
             UserNotFoundException.class,
             GenreNotFoundException.class,
             MpaNotFoundException.class,
-            DirectorNotFoundException.class,})
+            DirectorNotFoundException.class,
+            MpaNotFoundException.class,
+            ReviewNotFoundException.class
+    })
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public Map<String, String> handleNotFound(final RuntimeException e) {
         return Map.of(
@@ -25,7 +28,8 @@ public class ErrorHandler {
 
     @ExceptionHandler({FilmAlreadyExistsException.class,
             UserAlreadyExistsException.class,
-            DirectorAlreadyExistsException.class})
+            DirectorAlreadyExistsException.class,
+            ReviewAlreadyExistsException.class})
     @ResponseStatus(HttpStatus.CONFLICT)
     public Map<String, String> handleAlreadyExists(final RuntimeException e) {
         return Map.of(
