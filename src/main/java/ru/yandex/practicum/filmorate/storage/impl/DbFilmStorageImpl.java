@@ -169,9 +169,7 @@ public class DbFilmStorageImpl implements FilmStorage {
             }
         });
 
-        film.setId(filmId);
-
-        return Optional.of(film);
+        return getById(filmId);
     }
 
     @Override
@@ -186,12 +184,12 @@ public class DbFilmStorageImpl implements FilmStorage {
                 "where FILM_ID = ?";
 
         if (jdbcTemplate.update(sqlQueryUpdateFilms,
-                    film.getName(),
-                    film.getDescription(),
-                    film.getMpa().getId(),
-                    film.getReleaseDate(),
-                    film.getDuration(),
-                    film.getId()) == 0) {
+                film.getName(),
+                film.getDescription(),
+                film.getMpa().getId(),
+                film.getReleaseDate(),
+                film.getDuration(),
+                film.getId()) == 0) {
             return Optional.empty();
         }
 
@@ -427,7 +425,7 @@ public class DbFilmStorageImpl implements FilmStorage {
                 "order by count(FL.USER_ID) desc " +
                 "limit ?";
 
-        List<Film> films = jdbcTemplate.query(sqlQueryGetPopularFilms, Mapper::mapRowToFilm, genreId, year,count);
+        List<Film> films = jdbcTemplate.query(sqlQueryGetPopularFilms, Mapper::mapRowToFilm, genreId, year, count);
 
         if (!films.isEmpty()) {
             Map<Long, Film> mapFilms = films.stream().collect(Collectors.toMap(Film::getId, Function.identity()));
@@ -472,13 +470,15 @@ public class DbFilmStorageImpl implements FilmStorage {
 
         jdbcTemplate.update(sqlQueryDeleteLikes, idFilm, idUser);
     }
-    @Override
-    public Optional<Film> deleteFilmById(long filmId) {
-        Optional<Film> film = getById(filmId);
-        String sqlQueryDeleteFilm = "delete from FILMS where FILM_ID = ?;";
-        jdbcTemplate.update(sqlQueryDeleteFilm, filmId);
 
-        return film;
+    @Override
+    public Optional<Boolean> deleteFilmById(long filmId) {
+        String sqlQueryDeleteFilm = "delete from FILMS where FILM_ID = ?;";
+        if (jdbcTemplate.update(sqlQueryDeleteFilm, filmId) == 0) {
+            return Optional.empty();
+        }
+
+        return Optional.of(true);
     }
 
     @Override
@@ -694,7 +694,6 @@ public class DbFilmStorageImpl implements FilmStorage {
         } else {
             return new ArrayList<>();
         }
-
 
 
         if (!films.isEmpty()) {

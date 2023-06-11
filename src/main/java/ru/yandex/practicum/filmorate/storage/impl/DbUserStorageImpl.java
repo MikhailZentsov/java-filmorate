@@ -142,13 +142,15 @@ public class DbUserStorageImpl implements UserStorage {
 
         return findAllFriendsById(idUser);
     }
-    @Override
-    public Optional<User> deleteUserById(long userId) {
-        Optional<User> user = getById(userId);
-        String sqlQueryDeleteUser = "delete from USERS where USER_ID = ?;";
-        jdbcTemplate.update(sqlQueryDeleteUser, userId);
 
-        return user;
+    @Override
+    public Optional<Boolean> deleteUserById(long userId) {
+        String sqlQueryDeleteUser = "delete from USERS where USER_ID = ?;";
+        if (jdbcTemplate.update(sqlQueryDeleteUser, userId) == 0) {
+            return Optional.empty();
+        }
+
+        return Optional.of(true);
     }
 
     @Override
@@ -195,9 +197,9 @@ public class DbUserStorageImpl implements UserStorage {
                     "from GENRES_FILMS FG " +
                     "    left join GENRES G2 on FG.GENRE_ID = G2.GENRE_ID " +
                     "where FG.FILM_ID IN ( " + mapFilms.keySet()
-                                                    .stream()
-                                                    .map(String::valueOf)
-                                                    .collect(Collectors.joining(",")) + " ) " +
+                    .stream()
+                    .map(String::valueOf)
+                    .collect(Collectors.joining(",")) + " ) " +
                     "order by genreId ";
             List<Map<String, Object>> genres = jdbcTemplate.queryForList(sqlQueryGetAllGenres);
             genres.forEach(t -> mapFilms.get(Long.parseLong(t.get("filmId").toString()))
