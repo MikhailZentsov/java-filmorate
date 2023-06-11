@@ -21,7 +21,7 @@ public class Review {
     private Long useful;
     private Long reviewId;
 
-    public Review() {
+    private Review() {
 
     }
 
@@ -43,5 +43,47 @@ public class Review {
         values.put("USER_ID", userId);
 
         return values;
+    }
+
+    public static class Builder {
+        private final Review newReview;
+
+        public Builder() {
+            newReview = new Review();
+        }
+
+        public Builder reviewId(Long reviewId) {
+            newReview.setReviewId(reviewId);
+            return this;
+        }
+
+        public Builder userId(Long userId) {
+            newReview.setUserId(userId);
+            return this;
+        }
+
+        public Builder filmId(Long filmId) {
+            newReview.setFilmId(filmId);
+            return this;
+        }
+
+        public Builder useful(Long useful) {
+            newReview.setUseful(useful);
+            return this;
+        }
+
+        public Builder isPositive(Boolean isPositive) {
+            newReview.setIsPositive(isPositive);
+            return this;
+        }
+
+        public Builder content(String content) {
+            newReview.setContent(content);
+            return this;
+        }
+
+        public Review build() {
+            return newReview;
+        }
     }
 }

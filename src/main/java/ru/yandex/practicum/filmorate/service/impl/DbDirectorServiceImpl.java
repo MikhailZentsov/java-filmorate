@@ -8,18 +8,16 @@ import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.service.DirectorService;
 import ru.yandex.practicum.filmorate.storage.DirectorStorage;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Service
 @RequiredArgsConstructor
 public class DbDirectorServiceImpl implements DirectorService {
-
     private final DirectorStorage directorStorage;
 
     @Override
     public List<Director> getDirectors() {
-        return directorStorage.getDirectors().orElse(new ArrayList<>());
+        return directorStorage.getDirectors();
     }
 
     @Override

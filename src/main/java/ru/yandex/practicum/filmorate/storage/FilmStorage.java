@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.Optional;
 
 public interface FilmStorage {
-    Optional<List<Film>> findAll();
+    List<Film> findAll();
 
     Optional<Film> getById(Long id);
 
@@ -28,9 +28,9 @@ public interface FilmStorage {
 
     List<Film> findFilmsByNameAndDirector(String query, List<String> by);
 
-    Optional<List<Film>> getFilmsByDirectorSortedByYear(Long directorId, String sort);
+    List<Film> getFilmsByDirectorSortedByYear(Long directorId, String sort);
 
-    Optional<List<Film>> getFilmsByDirectorSortedByLikes(Long directorId, String sort);
+    List<Film> getFilmsByDirectorSortedByLikes(Long directorId, String sort);
 
     List<Film> getCommonFilms(Long userId, Long friendId);
 

@@ -1,11 +1,13 @@
 package ru.yandex.practicum.filmorate.storage.impl;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
+import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.User;
@@ -20,16 +22,13 @@ import java.util.stream.Collectors;
 
 @Slf4j
 @Repository
+@RequiredArgsConstructor
 public class DbUserStorageImpl implements UserStorage {
     private final JdbcTemplate jdbcTemplate;
 
-    public DbUserStorageImpl(JdbcTemplate jdbcTemplate) {
-        this.jdbcTemplate = jdbcTemplate;
-    }
-
     @Override
     @Transactional
-    public Optional<List<User>> findAll() {
+    public List<User> findAll() {
         String sqlQueryGetUsers = "select USER_ID as id, " +
                 "       USER_NAME as name, " +
                 "       EMAIL as email, " +
@@ -38,9 +37,7 @@ public class DbUserStorageImpl implements UserStorage {
                 "from USERS " +
                 "order by USER_ID";
 
-        List<User> users = jdbcTemplate.query(sqlQueryGetUsers, Mapper::mapRowToUser);
-
-        return Optional.of(users);
+        return jdbcTemplate.query(sqlQueryGetUsers, Mapper::mapRowToUser);
     }
 
     @Override
@@ -107,7 +104,7 @@ public class DbUserStorageImpl implements UserStorage {
 
     @Override
     @Transactional
-    public Optional<List<User>> findAllFriendsById(Long id) {
+    public List<User> findAllFriendsById(Long id) {
         String sqlQueryGetFriends = "select USERS.user_id as id, " +
                 "       email as email, " +
                 "       login as login, " +
@@ -118,12 +115,12 @@ public class DbUserStorageImpl implements UserStorage {
                 "where RU.USER_ID = ?" +
                 "order by id";
 
-        return Optional.of(jdbcTemplate.query(sqlQueryGetFriends, Mapper::mapRowToUser, id));
+        return jdbcTemplate.query(sqlQueryGetFriends, Mapper::mapRowToUser, id);
     }
 
     @Override
     @Transactional
-    public Optional<List<User>> saveOneFriend(Long idUser, Long idFriend) {
+    public List<User> saveOneFriend(Long idUser, Long idFriend) {
         String sqlQueryAddFriend = "insert into RELATIONSHIP_USERS (user_id, friend_id)" +
                 "values (?, ?)";
 
@@ -134,7 +131,7 @@ public class DbUserStorageImpl implements UserStorage {
 
     @Override
     @Transactional
-    public Optional<List<User>> deleteOneFriend(Long idUser, Long idFriend) {
+    public List<User> deleteOneFriend(Long idUser, Long idFriend) {
         String sqlQueryRemoveFriend = "delete from RELATIONSHIP_USERS " +
                 "where USER_ID = ? and FRIEND_ID = ?";
 
@@ -144,6 +141,7 @@ public class DbUserStorageImpl implements UserStorage {
     }
 
     @Override
+    @Transactional
     public Optional<Boolean> deleteUserById(long userId) {
         String sqlQueryDeleteUser = "delete from USERS where USER_ID = ?;";
         if (jdbcTemplate.update(sqlQueryDeleteUser, userId) == 0) {
@@ -196,16 +194,40 @@ public class DbUserStorageImpl implements UserStorage {
                     "       G2.GENRE_ID as genreId " +
                     "from GENRES_FILMS FG " +
                     "    left join GENRES G2 on FG.GENRE_ID = G2.GENRE_ID " +
-                    "where FG.FILM_ID IN ( " + mapFilms.keySet()
-                    .stream()
-                    .map(String::valueOf)
-                    .collect(Collectors.joining(",")) + " ) " +
+                    "where FG.FILM_ID IN ( " +
+                    mapFilms.keySet()
+                            .stream()
+                            .map(String::valueOf)
+                            .collect(Collectors.joining(",")) +
+                    " ) " +
                     "order by genreId ";
             List<Map<String, Object>> genres = jdbcTemplate.queryForList(sqlQueryGetAllGenres);
             genres.forEach(t -> mapFilms.get(Long.parseLong(t.get("filmId").toString()))
                     .getGenres()
                     .add(Genre.valueOf(t.get("genreName").toString())
                     ));
+
+            String sqlQueryGetDirectors = "select FILM_ID as filmId, " +
+                    "       D.DIRECTOR_ID as directorId, " +
+                    "       DIRECTOR_NAME as directorName " +
+                    "from DIRECTORS_FILMS " +
+                    "    inner join DIRECTORS D on D.DIRECTOR_ID = DIRECTORS_FILMS.DIRECTOR_ID " +
+                    "where FILM_ID IN (" +
+                    mapFilms.keySet()
+                            .stream()
+                            .map(String::valueOf)
+                            .collect(Collectors.joining(",")) +
+                    " )" +
+                    "order by directorId";
+
+            List<Map<String, Object>> directorsFilms = jdbcTemplate.queryForList(sqlQueryGetDirectors);
+
+            directorsFilms.forEach(t -> mapFilms.get(Long.parseLong(t.get("filmId").toString())).getDirectors().add(
+                    new Director.Builder()
+                            .id(Long.parseLong(t.get("directorId").toString()))
+                            .name(t.get("directorName").toString())
+                            .build()
+            ));
         }
 
         return films;

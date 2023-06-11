@@ -20,6 +20,7 @@ public class DbReviewStorageImpl implements ReviewStorage {
     private final JdbcTemplate jdbcTemplate;
 
     @Override
+    @Transactional
     public List<Review> findAll(int count) {
         return jdbcTemplate.query("select R.REVIEW_ID, " +
                 "R.FILM_ID,  " +
@@ -82,23 +83,24 @@ public class DbReviewStorageImpl implements ReviewStorage {
                 .withTableName("REVIEWS")
                 .usingGeneratedKeyColumns("REVIEW_ID");
 
-
-        Long reviewId = simpleJdbcInsert
-                .executeAndReturnKey(review.toMap()).longValue();
+        Long reviewId = simpleJdbcInsert.executeAndReturnKey(review.toMap()).longValue();
         review.setReviewId(reviewId);
+
         return Optional.of(review);
     }
 
     @Override
     @Transactional
     public Optional<Review> updateReview(Review review) {
-        jdbcTemplate.update("update REVIEWS "
+        if (jdbcTemplate.update("update REVIEWS "
                         + "set    CONTENT = ?, "
                         + "IS_POSITIVE = ? "
                         + "where REVIEW_ID = ?",
                 review.getContent(),
                 review.getIsPositive(),
-                review.getReviewId());
+                review.getReviewId()) == 0) {
+            return Optional.empty();
+        }
 
         return getById(review.getReviewId());
     }
@@ -106,7 +108,10 @@ public class DbReviewStorageImpl implements ReviewStorage {
     @Override
     @Transactional
     public Optional<Long> removeReview(Long reviewId) {
-        Long userId = jdbcTemplate.queryForObject("select user_id from reviews where review_id = ?", Long.class, reviewId);
+        Long userId = jdbcTemplate.queryForObject("select user_id from reviews where review_id = ?",
+                Long.class,
+                reviewId);
+
         if (jdbcTemplate.update("delete "
                 + "from REVIEWS "
                 + "where REVIEW_ID = ?", reviewId) == 0) {

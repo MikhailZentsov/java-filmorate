@@ -1,6 +1,7 @@
 package ru.yandex.practicum.filmorate.model;
 
-import lombok.*;
+import lombok.Getter;
+import lombok.Setter;
 
 import javax.validation.constraints.NotBlank;
 import java.util.HashMap;
@@ -13,12 +14,11 @@ public class Director {
 
     private long id;
 
-    @NotBlank(message = "Некорректное имя режиссера")
+    @NotBlank(message = "Имя режиссера не может быть пустым")
     private String name;
 
-    public Director(long id, String name) {
-        this.id = id;
-        this.name = name;
+    private Director() {
+
     }
 
     public Map<String, Object> toMap() {
@@ -47,5 +47,27 @@ public class Director {
                 "id=" + id +
                 ", name='" + name + '\'' +
                 '}';
+    }
+
+    public static class Builder {
+        private final Director director;
+
+        public Builder() {
+            director = new Director();
+        }
+
+        public Builder id(long id) {
+            director.setId(id);
+            return this;
+        }
+
+        public Builder name(String name) {
+            director.setName(name);
+            return this;
+        }
+
+        public Director build() {
+            return director;
+        }
     }
 }

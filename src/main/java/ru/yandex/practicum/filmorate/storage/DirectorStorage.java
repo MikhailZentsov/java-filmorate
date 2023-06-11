@@ -7,7 +7,7 @@ import java.util.Optional;
 
 public interface DirectorStorage {
 
-    Optional<List<Director>> getDirectors();
+    List<Director> getDirectors();
 
     Optional<Director> getDirector(long id);
 

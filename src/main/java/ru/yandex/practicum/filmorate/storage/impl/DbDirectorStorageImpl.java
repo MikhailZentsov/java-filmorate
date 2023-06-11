@@ -1,6 +1,7 @@
 package ru.yandex.practicum.filmorate.storage.impl;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
@@ -14,6 +15,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
+@Slf4j
 @RequiredArgsConstructor
 public class DbDirectorStorageImpl implements DirectorStorage {
 
@@ -21,14 +23,15 @@ public class DbDirectorStorageImpl implements DirectorStorage {
 
     @Override
     @Transactional
-    public Optional<List<Director>> getDirectors() {
+    public List<Director> getDirectors() {
         String sqlQueryGetUsers = "select DIRECTOR_ID as id, " +
                 "DIRECTOR_NAME as name " +
                 "from DIRECTORS";
 
         List<Director> directors = jdbcTemplate.query(sqlQueryGetUsers, Mapper::mapToRowDirector);
+        log.info("Получен список деректоров из {} элементов.", directors.size());
 
-        return Optional.of(directors);
+        return directors;
     }
 
     @Override
@@ -44,6 +47,7 @@ public class DbDirectorStorageImpl implements DirectorStorage {
         try {
             director = jdbcTemplate.queryForObject(sqlQueryGetDirector, Mapper::mapToRowDirector, id);
         } catch (DataAccessException e) {
+            log.info("Директор с ID = {} не найден.", id);
             return Optional.empty();
         }
 
@@ -62,6 +66,8 @@ public class DbDirectorStorageImpl implements DirectorStorage {
         long directorId = simpleJdbcInsert.executeAndReturnKey(director.toMap()).longValue();
 
         director.setId(directorId);
+        log.info("Директор с ID = {} создан.", directorId);
+
         return Optional.of(director);
     }
 
@@ -70,10 +76,8 @@ public class DbDirectorStorageImpl implements DirectorStorage {
     public Optional<Director> updateDirector(Director director) {
         String sqlQueryUpdateDirector = "update DIRECTORS set DIRECTOR_NAME = ? where DIRECTOR_ID = ?";
 
-        if (jdbcTemplate.update(sqlQueryUpdateDirector,
-                    director.getName(),
-                    director.getId()
-            ) == 0) {
+        if (jdbcTemplate.update(sqlQueryUpdateDirector, director.getName(), director.getId()) == 0) {
+            log.info("Директор с ID = {} не найден.", director.getId());
             return Optional.empty();
         }
 
@@ -83,8 +87,8 @@ public class DbDirectorStorageImpl implements DirectorStorage {
     @Override
     @Transactional
     public void removeDirector(long id) {
-        String sqlQueryRemoveDirector = "delete from DIRECTORS " +
-                "where DIRECTOR_ID = ?";
+        String sqlQueryRemoveDirector = "delete from DIRECTORS where DIRECTOR_ID = ?";
         jdbcTemplate.update(sqlQueryRemoveDirector, id);
+        log.info("Директор с ID = {} удален.", id);
     }
 }

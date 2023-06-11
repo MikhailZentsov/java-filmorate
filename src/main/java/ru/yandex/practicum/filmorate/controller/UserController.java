@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.controller;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -20,12 +21,9 @@ import java.util.List;
 @RestController
 @RequestMapping(value = "/users")
 @Slf4j
+@RequiredArgsConstructor
 public class UserController {
     private final UserService userService;
-
-    public UserController(UserService userService) {
-        this.userService = userService;
-    }
 
     @GetMapping
     public List<User> getUsers() {
@@ -34,11 +32,13 @@ public class UserController {
 
     @PostMapping(consumes = "application/json")
     public User addUser(@Valid @RequestBody User user) {
+        log.info("Получена сущность User");
         return userService.addUser(user);
     }
 
     @PutMapping
     public User updateUser(@Valid @RequestBody User user) {
+        log.info("Получена сущность User");
         return userService.updateUser(user);
     }
 
@@ -78,7 +78,7 @@ public class UserController {
     }
 
     @DeleteMapping("{userId}")
-    public void delete(@PathVariable("userId") long userId) {
+    public void deleteUser(@PathVariable("userId") long userId) {
         userService.deleteUserById(userId);
     }
 }

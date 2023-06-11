@@ -1,25 +1,22 @@
 package ru.yandex.practicum.filmorate.service.impl;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.MpaNotFoundException;
 import ru.yandex.practicum.filmorate.model.Mpa;
 import ru.yandex.practicum.filmorate.service.MpaService;
 import ru.yandex.practicum.filmorate.storage.MpaStorage;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Service
+@RequiredArgsConstructor
 public class DbMpaServiceImpl implements MpaService {
     private final MpaStorage mpaStorage;
 
-    public DbMpaServiceImpl(MpaStorage mpaStorage) {
-        this.mpaStorage = mpaStorage;
-    }
-
     @Override
     public List<Mpa> getMpas() {
-        return mpaStorage.findAll().orElse(new ArrayList<>());
+        return mpaStorage.findAll();
     }
 
     @Override

@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.controller;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -20,12 +21,9 @@ import java.util.List;
 @RestController
 @RequestMapping("/films")
 @Slf4j
+@RequiredArgsConstructor
 public class FilmController {
     private final FilmService filmService;
-
-    public FilmController(FilmService filmService) {
-        this.filmService = filmService;
-    }
 
     @GetMapping
     public List<Film> getFilms() {
@@ -34,11 +32,13 @@ public class FilmController {
 
     @PostMapping
     public Film addFilm(@Valid @RequestBody Film film) {
+        log.info("Получена сущность Film");
         return filmService.addFilm(film);
     }
 
     @PutMapping
     public Film updateFilm(@Valid @RequestBody Film film) {
+        log.info("Получена сущность Film");
         return filmService.updateFilm(film);
     }
 
@@ -84,7 +84,7 @@ public class FilmController {
     }
 
     @DeleteMapping("{filmId}")
-    public void delete(@PathVariable("filmId") long filmId) {
+    public void deleteFilm(@PathVariable("filmId") long filmId) {
         filmService.deleteFilmById(filmId);
     }
 }

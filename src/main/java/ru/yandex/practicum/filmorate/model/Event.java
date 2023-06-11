@@ -3,7 +3,6 @@ package ru.yandex.practicum.filmorate.model;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -23,7 +22,7 @@ public class Event {
 
     private EventOperation operation;
 
-    public Event() {
+    private Event() {
 
     }
 
@@ -61,6 +60,11 @@ public class Event {
             return this;
         }
 
+        public Builder timestamp(Long timestamp) {
+            newEvent.setTimestamp(timestamp);
+            return this;
+        }
+
         public Builder eventType(EventType eventType) {
             newEvent.setEventType(eventType);
             return this;
@@ -72,7 +76,6 @@ public class Event {
         }
 
         public Event build() {
-            newEvent.setTimestamp(Instant.now().toEpochMilli());
             return newEvent;
         }
     }

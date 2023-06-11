@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.storage.impl;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import org.springframework.stereotype.Repository;
@@ -11,12 +12,9 @@ import ru.yandex.practicum.filmorate.storage.mapper.Mapper;
 import java.util.List;
 
 @Repository
+@RequiredArgsConstructor
 public class DbEventStorageImpl implements EventStorage {
     private final JdbcTemplate jdbcTemplate;
-
-    public DbEventStorageImpl(JdbcTemplate jdbcTemplate) {
-        this.jdbcTemplate = jdbcTemplate;
-    }
 
     @Override
     @Transactional

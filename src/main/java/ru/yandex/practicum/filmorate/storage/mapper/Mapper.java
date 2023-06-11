@@ -24,54 +24,52 @@ public class Mapper {
     }
 
     public static Film mapRowToFilm(ResultSet resultSet, int rowNum) throws SQLException {
-        return new Film(
-                resultSet.getLong("id"),
-                resultSet.getString("name"),
-                resultSet.getString("description"),
-                resultSet.getDate("releaseDate").toLocalDate(),
-                resultSet.getInt("duration"),
-                Mpa.valueOf(resultSet.getString("mpa"))
-        );
+        return new Film.Builder()
+                .id(resultSet.getLong("id"))
+                .name(resultSet.getString("name"))
+                .description(resultSet.getString("description"))
+                .releaseDate(resultSet.getDate("releaseDate").toLocalDate())
+                .duration(resultSet.getInt("duration"))
+                .mpa(Mpa.valueOf(resultSet.getString("mpa")))
+                .build();
     }
 
     public static User mapRowToUser(ResultSet resultSet, int rowNum) throws SQLException {
-        return new User(
-                resultSet.getLong("id"),
-                resultSet.getString("login"),
-                resultSet.getString("name"),
-                resultSet.getString("email"),
-                resultSet.getDate("birthday").toLocalDate()
-        );
+        return new User.Builder()
+                .id(resultSet.getLong("id"))
+                .login(resultSet.getString("login"))
+                .name(resultSet.getString("name"))
+                .email(resultSet.getString("email"))
+                .birthday(resultSet.getDate("birthday").toLocalDate())
+                .build();
     }
 
     public static Event mapRowToEvent(ResultSet resultSet, int rowNum) throws SQLException {
-        Event event = new Event();
-        event.setEventId(resultSet.getLong("EVENT_ID"));
-        event.setEntityId(resultSet.getLong("ENTITY_ID"));
-        event.setUserId(resultSet.getLong("USER_ID"));
-        event.setTimestamp(resultSet.getLong("EVENT_TIMESTAMP"));
-        event.setEventType(EventType.valueOf(resultSet.getString("EVENT_TYPE")));
-        event.setOperation(EventOperation.valueOf(resultSet.getString("EVENT_OPERATION")));
-
-        return event;
+        return new Event.Builder()
+                .eventId(resultSet.getLong("EVENT_ID"))
+                .entityId(resultSet.getLong("ENTITY_ID"))
+                .userId(resultSet.getLong("USER_ID"))
+                .timestamp(resultSet.getLong("EVENT_TIMESTAMP"))
+                .eventType(EventType.valueOf(resultSet.getString("EVENT_TYPE")))
+                .eventOperation(EventOperation.valueOf(resultSet.getString("EVENT_OPERATION")))
+                .build();
     }
 
     public static Director mapToRowDirector(ResultSet resultSet, int rowNum) throws SQLException {
-        return new Director(
-                resultSet.getLong("id"),
-                resultSet.getString("name")
-        );
+        return new Director.Builder()
+                .id(resultSet.getLong("id"))
+                .name(resultSet.getString("name"))
+                .build();
     }
 
     public static Review mapRowToReview(ResultSet resultSet, int rowNum) throws SQLException {
-        Review review = new Review();
-        review.setReviewId(resultSet.getLong("REVIEW_ID"));
-        review.setContent(resultSet.getString("CONTENT"));
-        review.setIsPositive(resultSet.getBoolean("IS_POSITIVE"));
-        review.setUserId(resultSet.getLong("USER_ID"));
-        review.setFilmId(resultSet.getLong("FILM_ID"));
-        review.setUseful(resultSet.getLong("USEFUL"));
-
-        return review;
+        return new Review.Builder()
+                .reviewId(resultSet.getLong("REVIEW_ID"))
+                .content(resultSet.getString("CONTENT"))
+                .isPositive(resultSet.getBoolean("IS_POSITIVE"))
+                .userId(resultSet.getLong("USER_ID"))
+                .filmId(resultSet.getLong("FILM_ID"))
+                .useful(resultSet.getLong("USEFUL"))
+                .build();
     }
 }

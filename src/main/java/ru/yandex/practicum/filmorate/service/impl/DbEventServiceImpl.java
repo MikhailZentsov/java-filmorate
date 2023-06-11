@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.service.impl;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.model.Event;
 import ru.yandex.practicum.filmorate.model.EventOperation;
@@ -7,15 +8,13 @@ import ru.yandex.practicum.filmorate.model.EventType;
 import ru.yandex.practicum.filmorate.service.EventService;
 import ru.yandex.practicum.filmorate.storage.EventStorage;
 
+import java.time.Instant;
 import java.util.List;
 
 @Service
+@RequiredArgsConstructor
 public class DbEventServiceImpl implements EventService {
     private final EventStorage eventStorage;
-
-    public DbEventServiceImpl(EventStorage eventStorage) {
-        this.eventStorage = eventStorage;
-    }
 
     @Override
     public List<Event> findEventsByUserId(Long idUser) {
@@ -68,6 +67,7 @@ public class DbEventServiceImpl implements EventService {
         return new Event.Builder()
                 .userId(idUser)
                 .entityId(idEntity)
+                .timestamp(Instant.now().toEpochMilli())
                 .eventType(eventType)
                 .eventOperation(eventOperation)
                 .build();
