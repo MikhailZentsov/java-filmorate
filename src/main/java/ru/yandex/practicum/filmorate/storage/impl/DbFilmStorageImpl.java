@@ -238,7 +238,7 @@ public class DbFilmStorageImpl implements FilmStorage {
             }
         });
 
-        Optional.of(film);
+        return getById(film.getId());
     }
 
     @Override
