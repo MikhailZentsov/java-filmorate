@@ -43,7 +43,7 @@ public class Mapper {
         );
     }
 
-    public static Review mapRowToReview(ResultSet resultSet, int rowNum) throws  SQLException {
+    public static Review mapRowToReview(ResultSet resultSet, int rowNum) throws SQLException {
         Review review = new Review();
         review.setReviewId(resultSet.getLong("REVIEW_ID"));
         review.setContent(resultSet.getString("CONTENT"));
