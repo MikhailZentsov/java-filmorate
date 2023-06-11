@@ -23,7 +23,9 @@ public class Event {
 
     private EventOperation operation;
 
-    public Event() {}
+    public Event() {
+
+    }
 
     public Map<String, Object> toMap() {
         Map<String, Object> mapEvent = new HashMap<>();
