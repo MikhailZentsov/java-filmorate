@@ -42,7 +42,6 @@ public class DbReviewServiceImpl implements ReviewService {
                 "Пользователь с ID %s не найден", review.getUserId())));
         filmStorage.getById(review.getFilmId()).orElseThrow(() -> new FilmNotFoundException(String.format(
                 "Фильм с ID %s не найден", review.getFilmId())));
-
         return reviewStorage.saveReview(review).orElseThrow(() -> new ReviewAlreadyExistsException(String.format(
                 "Отзыв с ID %s уже существует", review.getReviewId())));
     }
