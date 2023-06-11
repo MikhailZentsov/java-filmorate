@@ -71,4 +71,9 @@ public class DbFilmServiceImpl implements FilmService {
                 "Фильм с ID %s не найден", idFilm)));
         filmStorage.removeLike(idFilm, idUser);
     }
+
+    @Override
+    public List<Film> getCommonFilms(Long userId, Long friendId) {
+        return filmStorage.getCommonFilms(userId, friendId);
+    }
 }

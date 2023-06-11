@@ -13,12 +13,7 @@ import ru.yandex.practicum.filmorate.storage.mapper.Mapper;
 
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -207,9 +202,9 @@ public class DbFilmStorageImpl implements FilmStorage {
                     "from GENRES_FILMS FG " +
                     "    left join GENRES G2 on FG.GENRE_ID = G2.GENRE_ID " +
                     "where FG.FILM_ID IN ( " + mapFilms.keySet()
-                                                .stream()
-                                                .map(String::valueOf)
-                                                .collect(Collectors.joining(",")) + " ) " +
+                    .stream()
+                    .map(String::valueOf)
+                    .collect(Collectors.joining(",")) + " ) " +
                     "order by genreId ";
             List<Map<String, Object>> genres = jdbcTemplate.queryForList(sqlQueryGetAllGenres);
             genres.forEach(t -> mapFilms.get(Long.parseLong(t.get("filmId").toString()))
@@ -239,5 +234,34 @@ public class DbFilmStorageImpl implements FilmStorage {
                 "where FILM_ID = ? AND USER_ID = ?";
 
         jdbcTemplate.update(sqlQueryDeleteLikes, idFilm, idUser);
+    }
+
+    @Override
+    @Transactional
+    public List<Film> getCommonFilms(Long userId, Long friendId) {
+        String sql = "WITH common_films AS ( " +
+                "    SELECT lf.FILM_ID " +
+                "    FROM LIKES_FILMS lf " +
+                "        INNER JOIN ( " +
+                "            SELECT lf2.FILM_ID  " +
+                "            FROM LIKES_FILMS lf2  " +
+                "            WHERE lf2.USER_ID = ? " +
+                "        ) AS flf ON lf.FILM_ID = flf.FILM_ID  " +
+                "    WHERE lf.USER_ID = ? " +
+                ") " +
+                " " +
+                "SELECT f.FILM_ID AS id, " +
+                "    f.FILM_NAME AS name, " +
+                "    f.FILM_DESCRIPTION AS description, " +
+                "    r.RATING_NAME AS mpa, " +
+                "    f.RELEASE_DATE AS releaseDate, " +
+                "    f.DURATION AS duration " +
+                "FROM FILMS f  " +
+                "    INNER JOIN common_films cf ON f.FILM_ID = cf.FILM_ID " +
+                "    INNER JOIN RATINGS r ON f.RATING_ID = r.RATING_ID " +
+                "    LEFT JOIN LIKES_FILMS lf ON f.FILM_ID = lf.FILM_ID  " +
+                "GROUP BY id, name, description, mpa, releaseDate, duration " +
+                "ORDER BY count(lf.USER_ID) DESC ";
+        return jdbcTemplate.query(sql, Mapper::mapRowToFilm, userId, friendId);
     }
 }
