@@ -15,7 +15,7 @@ public class ErrorHandler {
             UserNotFoundException.class,
             GenreNotFoundException.class,
             MpaNotFoundException.class,
-            DirectorNotFoundException.class,})
+            DirectorNotFoundException.class,
             MpaNotFoundException.class,
             ReviewNotFoundException.class
     })
