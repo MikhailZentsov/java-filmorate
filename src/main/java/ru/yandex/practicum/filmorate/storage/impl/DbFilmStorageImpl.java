@@ -16,7 +16,12 @@ import ru.yandex.practicum.filmorate.storage.mapper.Mapper;
 
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.util.*;
+import java.util.HashMap;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.ArrayList;
+import java.util.Map;
+import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -115,7 +120,7 @@ public class DbFilmStorageImpl implements FilmStorage {
                 "where FILM_ID = ?";
 
         List<Director> directorsFilms = jdbcTemplate.query(sqlQueryGetDirectors, Mapper::mapToRowDirector, id);
-        film.setDirectors(new HashSet<>(directorsFilms));
+        film.setDirectors(new LinkedHashSet<>(directorsFilms));
 
         return Optional.of(film);
     }
@@ -346,7 +351,7 @@ public class DbFilmStorageImpl implements FilmStorage {
                 "       DURATION, " +
                 "       RATING_ID " +
                 "from FILMS F " +
-                "where YEAR(RELEASE_DATE) = ? " +
+                "where EXTRACT(YEAR FROM f.RELEASE_DATE) = ? " +
                 ")" +
                 "select FCTE.FILM_ID as id, " +
                 "       FILM_DESCRIPTION as description, " +
@@ -402,7 +407,7 @@ public class DbFilmStorageImpl implements FilmStorage {
                 "from FILMS F " +
                 "       left join GENRES_FILMS GF on F.FILM_ID = GF.FILM_ID " +
                 "where GENRE_ID = ? " +
-                "       and YEAR(RELEASE_DATE) = ? " +
+                "       and EXTRACT(YEAR FROM f.RELEASE_DATE) = ? " +
                 ")" +
                 "select FCTE.FILM_ID as id, " +
                 "       FILM_DESCRIPTION as description, " +
