@@ -1,11 +1,11 @@
 package ru.yandex.practicum.filmorate.service.impl;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.*;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.service.EventService;
 import ru.yandex.practicum.filmorate.service.FilmService;
-import ru.yandex.practicum.filmorate.storage.DirectorStorage;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
@@ -13,24 +13,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Service
+@RequiredArgsConstructor
 public class DbFilmServiceImpl implements FilmService {
 
     private final FilmStorage filmStorage;
-
     private final UserStorage userStorage;
     private final EventService eventService;
-    private final DirectorStorage directorStorage;
-
-    public DbFilmServiceImpl(FilmStorage filmStorage,
-                             UserStorage userStorage,
-                             DirectorStorage directorStorage,
-                             EventService eventService
-                ) {
-        this.filmStorage = filmStorage;
-        this.userStorage = userStorage;
-        this.eventService = eventService;
-        this.directorStorage = directorStorage;
-    }
 
     @Override
     public List<Film> getFilms() {
@@ -120,9 +108,10 @@ public class DbFilmServiceImpl implements FilmService {
             throw new ValidationParamsException("Параметр sort должен быть либо likes, либо year");
         }
     }
+
     @Override
     public void deleteFilmById(long filmId) {
-        filmStorage.deleteFilmById(filmId).orElseThrow(()->new FilmNotFoundException(String.format(
+        filmStorage.deleteFilmById(filmId).orElseThrow(() -> new FilmNotFoundException(String.format(
                 "Фильм с ID %s не найден", filmId)));
     }
 }
