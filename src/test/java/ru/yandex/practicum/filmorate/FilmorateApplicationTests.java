@@ -71,7 +71,7 @@ class FilmorateApplicationTests {
 				LocalDate.of(1977, 7, 7),
 				200,
 				Mpa.NC17);
-		filmThree = new Film (0,
+		filmThree = new Film(0,
 				"filmThree",
 				"descriptionThree",
 				LocalDate.of(2001,4,14),
