@@ -3,6 +3,7 @@ package ru.yandex.practicum.filmorate.service.impl;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.UserAlreadyExistsException;
 import ru.yandex.practicum.filmorate.exception.UserNotFoundException;
+import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.UserService;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
@@ -91,6 +92,15 @@ public class DbUserServiceImpl implements UserService {
         return userFriends.stream()
                 .sorted(Comparator.comparingLong(User::getId))
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<Film> getRecommendations(Long userId) {
+        userStorage.getById(userId).orElseThrow(() ->
+                new UserNotFoundException(String.format(
+                        "Пользователь с ID %s не найден", userId)));
+
+        return userStorage.findRecommendationsFilms(userId);
     }
 
     private User normalizeNameUser(User user) {

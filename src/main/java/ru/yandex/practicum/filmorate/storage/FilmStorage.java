@@ -20,5 +20,9 @@ public interface FilmStorage {
 
     void removeLike(Long idFilm, Long idUser);
 
+    Optional<List<Film>> getFilmsByDirectorSortedByYear(Long directorId, String sort);
+
+    Optional<List<Film>> getFilmsByDirectorSortedByLikes(Long directorId, String sort);
+
     List<Film> getCommonFilms(Long userId, Long friendId);
 }
