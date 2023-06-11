@@ -108,6 +108,10 @@ public class DbUserServiceImpl implements UserService {
 
     @Override
     public List<Event> getFeed(Long id) {
+        userStorage.getById(id).orElseThrow(() ->
+                new UserNotFoundException(String.format(
+                        "Пользователь с ID %s не найден", id)));
+
         return eventService.findEventsByUserId(id);
     }
 
