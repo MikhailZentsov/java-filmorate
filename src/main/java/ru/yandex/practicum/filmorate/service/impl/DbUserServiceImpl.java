@@ -131,4 +131,10 @@ public class DbUserServiceImpl implements UserService {
 
         return user;
     }
+
+    @Override
+    public void deleteUserById(long userId) {
+        userStorage.deleteUserById(userId).orElseThrow(() -> new UserNotFoundException(String.format(
+                "Пользователь с ID %s не найден", userId)));
+    }
 }

@@ -22,4 +22,6 @@ public interface UserStorage {
     Optional<List<User>> deleteOneFriend(Long idUser, Long idFriend);
 
     List<Film> findRecommendationsFilms(Long userId);
+
+    Optional<Boolean> deleteUserById(long userId);
 }

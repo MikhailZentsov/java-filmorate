@@ -457,4 +457,36 @@ class FilmorateApplicationTests {
 
         assertTrue(emptyListFilmsAfterLike.isEmpty());
     }
+
+    @Test
+    void deleteFilmById() {
+        filmStorage.saveOne(filmOne);
+        Optional<List<Film>> filmsOptional = filmStorage.findAll();
+
+        assertTrue(filmsOptional.isPresent());
+        assertEquals(filmsOptional.get().size(), 1);
+
+        filmStorage.deleteFilmById(1);
+
+        filmsOptional = filmStorage.findAll();
+
+        assertTrue(filmsOptional.isPresent());
+        assertEquals(filmsOptional.get().size(), 0);
+    }
+
+    @Test
+    void deleteUserById() {
+        userStorage.saveOne(userOne);
+        Optional<List<User>> usersOptional = userStorage.findAll();
+
+        assertTrue(usersOptional.isPresent());
+        assertEquals(usersOptional.get().size(), 1);
+
+        userStorage.deleteUserById(1);
+
+        usersOptional = userStorage.findAll();
+
+        assertTrue(usersOptional.isPresent());
+        assertEquals(usersOptional.get().size(), 0);
+    }
 }

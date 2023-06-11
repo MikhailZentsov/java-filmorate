@@ -24,6 +24,8 @@ public interface UserService {
 
     List<User> getCommonFriends(Long idUser, Long idFriend);
 
+    void deleteUserById(long userId);
+
     List<Event> getFeed(Long id);
 
     List<Film> getRecommendations(Long userId);

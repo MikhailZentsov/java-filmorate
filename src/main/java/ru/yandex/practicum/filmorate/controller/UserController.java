@@ -76,4 +76,9 @@ public class UserController {
     public List<Event> getFeed(@PathVariable Long id) {
         return userService.getFeed(id);
     }
+
+    @DeleteMapping("{userId}")
+    public void delete(@PathVariable("userId") long userId) {
+        userService.deleteUserById(userId);
+    }
 }
