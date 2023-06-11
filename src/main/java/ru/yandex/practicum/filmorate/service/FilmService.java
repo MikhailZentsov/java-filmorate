@@ -13,9 +13,15 @@ public interface FilmService {
 
     Film updateFilm(Film film);
 
-    List<Film> getTopFilms(Long count);
+    List<Film> getTopFilms(Long count, Integer genreId, String year);
 
     void addLike(Long idFilm, Long idUser);
 
     void removeLike(Long idFilm, Long idUser);
+
+    List<Film> getFilmsWithQueryByTitleAndDirector(String query, List<String> by);
+
+    List<Film> getFilmsByDirectorSortedBy(Long directorId, String sort);
+
+    List<Film> getCommonFilms(Long userId, Long friendId);
 }

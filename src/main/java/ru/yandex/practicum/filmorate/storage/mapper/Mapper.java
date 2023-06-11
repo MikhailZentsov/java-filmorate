@@ -7,6 +7,8 @@ import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.Mpa;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.model.Review;
+import ru.yandex.practicum.filmorate.model.Director;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -52,5 +54,24 @@ public class Mapper {
         event.setOperation(EventOperation.valueOf(resultSet.getString("EVENT_OPERATION")));
 
         return event;
+    }
+
+    public static Director mapToRowDirector(ResultSet resultSet, int rowNum) throws SQLException {
+        return new Director(
+                resultSet.getLong("id"),
+                resultSet.getString("name")
+        );
+    }
+
+    public static Review mapRowToReview(ResultSet resultSet, int rowNum) throws SQLException {
+        Review review = new Review();
+        review.setReviewId(resultSet.getLong("REVIEW_ID"));
+        review.setContent(resultSet.getString("CONTENT"));
+        review.setIsPositive(resultSet.getBoolean("IS_POSITIVE"));
+        review.setUserId(resultSet.getLong("USER_ID"));
+        review.setFilmId(resultSet.getLong("FILM_ID"));
+        review.setUseful(resultSet.getLong("USEFUL"));
+
+        return review;
     }
 }
