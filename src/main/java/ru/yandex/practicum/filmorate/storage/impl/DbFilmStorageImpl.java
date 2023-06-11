@@ -98,7 +98,7 @@ public class DbFilmStorageImpl implements FilmStorage {
 
         assert film != null;
 
-        String sqlQueryGetGenres = "select GENRE_NAME as genre " +
+        String sqlQueryGetGenres = "select GENRE_NAME " +
                 "from GENRES_FILMS " +
                 "         left join GENRES G on G.GENRE_ID = GENRES_FILMS.GENRE_ID " +
                 "where FILM_ID = ? " +
@@ -338,7 +338,7 @@ public class DbFilmStorageImpl implements FilmStorage {
                 "JOIN PUBLIC.DIRECTORS_FILMS df ON f.FILM_ID = df.FILM_ID " +
                 "LEFT JOIN PUBLIC.RATINGS R ON R.RATING_ID = f.RATING_ID " +
                 "WHERE df.DIRECTOR_ID = ? " +
-                "ORDER BY YEAR(f.RELEASE_DATE) ASC";
+                "ORDER BY EXTRACT(YEAR FROM f.RELEASE_DATE)";
 
         List<Film> films = jdbcTemplate.query(sqlQueryGetDirectorFilmsSortedByLike, Mapper::mapRowToFilm, directorId);
 
@@ -461,36 +461,61 @@ public class DbFilmStorageImpl implements FilmStorage {
     @Override
     public List<Film> findFilmsByNameAndDirector(String query, List<String> by) {
         String sqlQuery;
-        String sqlQueryFindFilmsByName = "select FILM_ID          as id,\n" +
-                "       FILM_NAME        as name,\n" +
-                "       FILM_DESCRIPTION as description,\n" +
-                "       RATING_ID        as mpa,\n" +
-                "       RELEASE_DATE     as releaseDate,\n" +
-                "       DURATION         as duration\n" +
-                "from FILMS\n" +
-                "where FILM_NAME ILIKE CONCAT('%', ?, '%')";
-        String sqlQueryFindFilmsByDirector = "select F.FILM_ID        as id,\n" +
-                "       FILM_NAME        as name,\n" +
-                "       FILM_DESCRIPTION as description,\n" +
-                "       RATING_ID        as mpa,\n" +
-                "       RELEASE_DATE     as releaseDate,\n" +
-                "       DURATION         as duration\n" +
-                "from FILMS F\n" +
-                "         inner join DIRECTORS_FILMS DF on F.FILM_ID = DF.FILM_ID\n" +
-                "         inner join DIRECTORS D on DF.DIRECTOR_ID = D.DIRECTOR_ID\n" +
-                "where DIRECTOR_NAME ILIKE CONCAT('%', ?, '%')";
+        String sqlQueryFindFilmsByName = "select FF.FILM_ID             as id, " +
+                "             FILM_NAME              as name, " +
+                "             FILM_DESCRIPTION       as description, " +
+                "             R.RATING_NAME          as mpa, " +
+                "             RELEASE_DATE           as releaseDate, " +
+                "             DURATION               as duration, " +
+                "             COALESCE(LF.USER_ID, 0) as likes " +
+                "      from FILMS FF " +
+                "               left join RATINGS R on FF.RATING_ID = R.RATING_ID " +
+                "               left join LIKES_FILMS LF on FF.FILM_ID = LF.FILM_ID " +
+                "      where FILM_NAME ILIKE CONCAT('%', ?, '%') ";
+        String sqlQueryFindFilmsByDirector = "select F.FILM_ID              as id, " +
+                "             FILM_NAME              as name, " +
+                "             FILM_DESCRIPTION       as description, " +
+                "             R.RATING_NAME          as mpa, " +
+                "             RELEASE_DATE           as releaseDate, " +
+                "             DURATION               as duration, " +
+                "             COALESCE(L.USER_ID, 0) as likes " +
+                "      from FILMS F " +
+                "               left join RATINGS R on F.RATING_ID = R.RATING_ID " +
+                "               inner join DIRECTORS_FILMS DF on F.FILM_ID = DF.FILM_ID " +
+                "               inner join DIRECTORS D on DF.DIRECTOR_ID = D.DIRECTOR_ID " +
+                "               left join LIKES_FILMS L on F.FILM_ID = L.FILM_ID " +
+                "      where DIRECTOR_NAME ILIKE CONCAT('%', ?, '%')";
 
+        String sqlQueryTop = "select id, name, description, mpa, releaseDate, duration " +
+                "from (";
+        String addQueryBottom = ") as t " +
+                "group by id, " +
+                "         name, " +
+                "         description, " +
+                "         mpa, " +
+                "         releaseDate, " +
+                "         duration " +
+                "order by sum(likes) desc, id";
+
+        List<Film> films;
         if (by.size() == 2) {
-            sqlQuery = sqlQueryFindFilmsByName + " union all " + sqlQueryFindFilmsByDirector + " order by id";
+            sqlQuery = sqlQueryTop +
+                    sqlQueryFindFilmsByName +
+                    "union all " +
+                    sqlQueryFindFilmsByDirector +
+                    addQueryBottom;
+            films = jdbcTemplate.query(sqlQuery, Mapper::mapRowToFilm, query, query);
         } else if (by.contains("title")) {
-            sqlQuery = sqlQueryFindFilmsByName;
+            sqlQuery = sqlQueryTop + sqlQueryFindFilmsByName + addQueryBottom;
+            films = jdbcTemplate.query(sqlQuery, Mapper::mapRowToFilm, query);
         } else if (by.contains("director")) {
-            sqlQuery = sqlQueryFindFilmsByDirector;
+            sqlQuery = sqlQueryTop + sqlQueryFindFilmsByDirector + addQueryBottom;
+            films = jdbcTemplate.query(sqlQuery, Mapper::mapRowToFilm, query);
         } else {
             return new ArrayList<>();
         }
 
-        List<Film> films = jdbcTemplate.query(sqlQuery, Mapper::mapRowToFilm, query);
+
 
         if (!films.isEmpty()) {
             Map<Long, Film> mapFilms = films.stream().collect(Collectors.toMap(Film::getId, Function.identity()));
@@ -509,6 +534,22 @@ public class DbFilmStorageImpl implements FilmStorage {
                     .getGenres()
                     .add(Genre.valueOf(t.get("genreName").toString())
                     ));
+
+            String sqlQueryGetDirectors = "select FILM_ID as filmId, " +
+                    "       D.DIRECTOR_ID as directorId, " +
+                    "       DIRECTOR_NAME as directorName " +
+                    "from DIRECTORS_FILMS " +
+                    "    inner join DIRECTORS D on D.DIRECTOR_ID = DIRECTORS_FILMS.DIRECTOR_ID " +
+                    "where FILM_ID IN (" + mapFilms.keySet()
+                    .stream()
+                    .map(String::valueOf)
+                    .collect(Collectors.joining(",")) + " )";
+            List<Map<String, Object>> directorsFilms = jdbcTemplate.queryForList(sqlQueryGetDirectors);
+            directorsFilms.forEach(t -> mapFilms.get(Long.parseLong(t.get("filmId").toString())).getDirectors().add(
+                    new Director(
+                            Long.parseLong(t.get("directorId").toString()),
+                            t.get("directorName").toString())
+            ));
         }
 
         return films;
