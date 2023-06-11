@@ -122,6 +122,16 @@ public class Film {
             return this;
         }
 
+        public Builder genres(Set<Genre> genres) {
+            newFilm.setGenres(Objects.requireNonNullElseGet(genres, LinkedHashSet::new));
+            return this;
+        }
+
+        public Builder directors(Set<Director> directors) {
+            newFilm.setDirectors(Objects.requireNonNullElseGet(directors, LinkedHashSet::new));
+            return this;
+        }
+
         public Film build() {
             return newFilm;
         }
