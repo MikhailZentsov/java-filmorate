@@ -82,7 +82,6 @@ public class DbFilmStorageImpl implements FilmStorage {
     }
 
     @Override
-    @Transactional
     public Optional<Film> getById(Long id) {
         String sqlQueryGetFilm = "select F.FILM_ID          as id, " +
                 "       F.FILM_NAME        as name, " +
@@ -102,10 +101,12 @@ public class DbFilmStorageImpl implements FilmStorage {
             return Optional.empty();
         }
 
+        log.info("Попытка записать жанры и директоров");
+
         assert film != null;
 
-        setGenresToOneFilm(film);
-        setDirectorsToOneFilm(film);
+        setGenresToOneFilm(film, jdbcTemplate);
+        setDirectorsToOneFilm(film, jdbcTemplate);
 
         return Optional.of(film);
     }
@@ -118,9 +119,10 @@ public class DbFilmStorageImpl implements FilmStorage {
                 .usingGeneratedKeyColumns("FILM_ID");
 
         long filmId = simpleJdbcInsert.executeAndReturnKey(film.toMap()).longValue();
+        film.setId(filmId);
 
-        saveGenresFromOneFilm(film);
-        saveDirectorsFromOneFilm(film);
+        saveGenresFromOneFilm(film, jdbcTemplate);
+        saveDirectorsFromOneFilm(film, jdbcTemplate);
 
         return getById(filmId);
     }
@@ -150,12 +152,12 @@ public class DbFilmStorageImpl implements FilmStorage {
                 "where FILM_ID = ?";
 
         jdbcTemplate.update(sqlQueryDeleteGenres, film.getId());
-        saveGenresFromOneFilm(film);
+        saveGenresFromOneFilm(film, jdbcTemplate);
 
         String sqlQueryDeleteDirectors = "delete from DIRECTORS_FILMS " +
                 "where FILM_ID = ?";
         jdbcTemplate.update(sqlQueryDeleteDirectors, film.getId());
-        saveDirectorsFromOneFilm(film);
+        saveDirectorsFromOneFilm(film, jdbcTemplate);
 
         return getById(film.getId());
     }
@@ -185,8 +187,8 @@ public class DbFilmStorageImpl implements FilmStorage {
 
         if (!films.isEmpty()) {
             Map<Long, Film> mapFilms = films.stream().collect(Collectors.toMap(Film::getId, Function.identity()));
-            setGenresToMapFilms(mapFilms);
-            setDirectorsToMapFilms(mapFilms);
+            setGenresToMapFilms(mapFilms, jdbcTemplate);
+            setDirectorsToMapFilms(mapFilms, jdbcTemplate);
         }
 
         return films;
@@ -228,8 +230,8 @@ public class DbFilmStorageImpl implements FilmStorage {
 
         if (!films.isEmpty()) {
             Map<Long, Film> mapFilms = films.stream().collect(Collectors.toMap(Film::getId, Function.identity()));
-            setGenresToMapFilms(mapFilms);
-            setDirectorsToMapFilms(mapFilms);
+            setGenresToMapFilms(mapFilms, jdbcTemplate);
+            setDirectorsToMapFilms(mapFilms, jdbcTemplate);
         }
 
         return films;
@@ -270,8 +272,8 @@ public class DbFilmStorageImpl implements FilmStorage {
 
         if (!films.isEmpty()) {
             Map<Long, Film> mapFilms = films.stream().collect(Collectors.toMap(Film::getId, Function.identity()));
-            setGenresToMapFilms(mapFilms);
-            setDirectorsToMapFilms(mapFilms);
+            setGenresToMapFilms(mapFilms, jdbcTemplate);
+            setDirectorsToMapFilms(mapFilms, jdbcTemplate);
         }
 
         return films;
@@ -314,8 +316,8 @@ public class DbFilmStorageImpl implements FilmStorage {
 
         if (!films.isEmpty()) {
             Map<Long, Film> mapFilms = films.stream().collect(Collectors.toMap(Film::getId, Function.identity()));
-            setGenresToMapFilms(mapFilms);
-            setDirectorsToMapFilms(mapFilms);
+            setGenresToMapFilms(mapFilms, jdbcTemplate);
+            setDirectorsToMapFilms(mapFilms, jdbcTemplate);
         }
 
         return films;
@@ -399,8 +401,8 @@ public class DbFilmStorageImpl implements FilmStorage {
         if (!films.isEmpty()) {
             Map<Long, Film> mapFilms = films.stream().collect(Collectors.toMap(Film::getId, Function.identity()));
 
-            setGenresToMapFilms(mapFilms);
-            setDirectorsToMapFilms(mapFilms);
+            setGenresToMapFilms(mapFilms, jdbcTemplate);
+            setDirectorsToMapFilms(mapFilms, jdbcTemplate);
         }
 
         return films;
@@ -425,8 +427,8 @@ public class DbFilmStorageImpl implements FilmStorage {
             Map<Long, Film> mapFilms = films.stream()
                     .collect(Collectors.toMap(Film::getId, Function.identity()));
 
-            setGenresToMapFilms(mapFilms);
-            setDirectorsToMapFilms(mapFilms);
+            setGenresToMapFilms(mapFilms, jdbcTemplate);
+            setDirectorsToMapFilms(mapFilms, jdbcTemplate);
         }
 
         return films;
@@ -494,14 +496,14 @@ public class DbFilmStorageImpl implements FilmStorage {
         if (!films.isEmpty()) {
             Map<Long, Film> mapFilms = films.stream().collect(Collectors.toMap(Film::getId, Function.identity()));
 
-            setGenresToMapFilms(mapFilms);
-            setDirectorsToMapFilms(mapFilms);
+            setGenresToMapFilms(mapFilms, jdbcTemplate);
+            setDirectorsToMapFilms(mapFilms, jdbcTemplate);
         }
 
         return films;
     }
 
-    private void setGenresToOneFilm(Film film) {
+    private static void setGenresToOneFilm(Film film, JdbcTemplate jdbcTemplate) {
         String sqlQueryGetGenres = "select GENRE_NAME " +
                 "from GENRES_FILMS " +
                 "         left join GENRES G on G.GENRE_ID = GENRES_FILMS.GENRE_ID " +
@@ -513,7 +515,7 @@ public class DbFilmStorageImpl implements FilmStorage {
         film.setGenres(new LinkedHashSet<>(genresFilms));
     }
 
-    private void setDirectorsToOneFilm(Film film) {
+    private static void setDirectorsToOneFilm(Film film, JdbcTemplate jdbcTemplate) {
         String sqlQueryGetDirectors = "select D.DIRECTOR_ID as id, " +
                 "       DIRECTOR_NAME as name " +
                 "from DIRECTORS_FILMS " +
@@ -525,7 +527,7 @@ public class DbFilmStorageImpl implements FilmStorage {
         film.setDirectors(new LinkedHashSet<>(directors));
     }
 
-    private void saveGenresFromOneFilm(Film film) {
+    private static void saveGenresFromOneFilm(Film film, JdbcTemplate jdbcTemplate) {
         String sqlQueryAddGenres = "insert into GENRES_FILMS (FILM_ID, GENRE_ID) " +
                 "values (?, ?)";
 
@@ -544,7 +546,7 @@ public class DbFilmStorageImpl implements FilmStorage {
         });
     }
 
-    private void saveDirectorsFromOneFilm(Film film) {
+    private static void saveDirectorsFromOneFilm(Film film, JdbcTemplate jdbcTemplate) {
         List<Director> directors = new ArrayList<>(film.getDirectors());
 
         String sqlQueryAddDirectors = "insert into DIRECTORS_FILMS (DIRECTOR_ID, FILM_ID) " +
@@ -564,7 +566,7 @@ public class DbFilmStorageImpl implements FilmStorage {
         });
     }
 
-    private void setGenresToMapFilms(Map<Long, Film> films) {
+    private static void setGenresToMapFilms(Map<Long, Film> films, JdbcTemplate jdbcTemplate) {
         String sqlQueryGetAllGenres = "select FG.FILM_ID as filmId, " +
                 "       G2.GENRE_NAME as genreName, " +
                 "       G2.GENRE_ID as genreId " +
@@ -584,7 +586,7 @@ public class DbFilmStorageImpl implements FilmStorage {
                 ));
     }
 
-    private void setDirectorsToMapFilms(Map<Long, Film> films) {
+    private static void setDirectorsToMapFilms(Map<Long, Film> films, JdbcTemplate jdbcTemplate) {
         String sqlQueryGetDirectors = "select FILM_ID as filmId, " +
                 "       D.DIRECTOR_ID as directorId, " +
                 "       DIRECTOR_NAME as directorName " +

@@ -40,7 +40,7 @@ public class Film {
 
     private Set<Director> directors;
 
-    private Film () {
+    private Film() {
         genres = new LinkedHashSet<>();
         directors = new LinkedHashSet<>();
     }
@@ -119,6 +119,16 @@ public class Film {
 
         public Builder mpa(Mpa mpa) {
             newFilm.setMpa(mpa);
+            return this;
+        }
+
+        public Builder genres(Set<Genre> genres) {
+            newFilm.setGenres(Objects.requireNonNullElseGet(genres, LinkedHashSet::new));
+            return this;
+        }
+
+        public Builder directors(Set<Director> directors) {
+            newFilm.setDirectors(Objects.requireNonNullElseGet(directors, LinkedHashSet::new));
             return this;
         }
 
