@@ -3,6 +3,7 @@ package ru.yandex.practicum.filmorate.service.impl;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.*;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.service.EventService;
 import ru.yandex.practicum.filmorate.service.FilmService;
 import ru.yandex.practicum.filmorate.storage.DirectorStorage;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
@@ -17,14 +18,17 @@ public class DbFilmServiceImpl implements FilmService {
     private final FilmStorage filmStorage;
 
     private final UserStorage userStorage;
-
+    private final EventService eventService;
     private final DirectorStorage directorStorage;
 
     public DbFilmServiceImpl(FilmStorage filmStorage,
                              UserStorage userStorage,
-                             DirectorStorage directorStorage) {
+                             DirectorStorage directorStorage,
+                             EventService eventService
+                ) {
         this.filmStorage = filmStorage;
         this.userStorage = userStorage;
+        this.eventService = eventService;
         this.directorStorage = directorStorage;
     }
 
@@ -70,7 +74,9 @@ public class DbFilmServiceImpl implements FilmService {
                 "Пользователь с ID %s не найден", idUser)));
         filmStorage.getById(idFilm).orElseThrow(() -> new FilmNotFoundException(String.format(
                 "Фильм с ID %s не найден", idFilm)));
+
         filmStorage.creatLike(idFilm, idUser);
+        eventService.createAddLikeEvent(idUser, idFilm);
     }
 
     @Override
@@ -79,7 +85,9 @@ public class DbFilmServiceImpl implements FilmService {
                 "Пользователь с ID %s не найден", idUser)));
         filmStorage.getById(idFilm).orElseThrow(() -> new FilmNotFoundException(String.format(
                 "Фильм с ID %s не найден", idFilm)));
+
         filmStorage.removeLike(idFilm, idUser);
+        eventService.createRemoveLikeEvent(idUser, idFilm);
     }
 
     @Override

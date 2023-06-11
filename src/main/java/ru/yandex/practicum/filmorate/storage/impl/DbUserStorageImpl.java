@@ -126,7 +126,9 @@ public class DbUserStorageImpl implements UserStorage {
     public Optional<List<User>> saveOneFriend(Long idUser, Long idFriend) {
         String sqlQueryAddFriend = "insert into RELATIONSHIP_USERS (user_id, friend_id)" +
                 "values (?, ?)";
+
         jdbcTemplate.update(sqlQueryAddFriend, idUser, idFriend);
+
         return findAllFriendsById(idUser);
     }
 
@@ -134,8 +136,10 @@ public class DbUserStorageImpl implements UserStorage {
     @Transactional
     public Optional<List<User>> deleteOneFriend(Long idUser, Long idFriend) {
         String sqlQueryRemoveFriend = "delete from RELATIONSHIP_USERS " +
-                "where USER_ID = ? AND FRIEND_ID = ?";
+                "where USER_ID = ? and FRIEND_ID = ?";
+
         jdbcTemplate.update(sqlQueryRemoveFriend, idUser, idFriend);
+
         return findAllFriendsById(idUser);
     }
 

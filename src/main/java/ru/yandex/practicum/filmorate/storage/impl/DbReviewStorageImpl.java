@@ -64,6 +64,11 @@ public class DbReviewStorageImpl implements ReviewStorage {
                     + "from REVIEWS as R "
                     + "left outer join REVIEW_REACTION as RR on R.REVIEW_ID = RR.REVIEW_ID "
                     + "where R.REVIEW_ID = ? "
+                    + "group by R.REVIEW_ID, "
+                    + "         FILM_ID,"
+                    + "         R.USER_ID,"
+                    + "         CONTENT,"
+                    + "         IS_POSITIVE "
                     + "order by USEFUL desc ", Mapper::mapRowToReview, reviewId));
         } catch (DataAccessException e) {
             return Optional.empty();
@@ -100,13 +105,15 @@ public class DbReviewStorageImpl implements ReviewStorage {
 
     @Override
     @Transactional
-    public Optional<Boolean> removeReview(Long reviewId) {
+    public Optional<Long> removeReview(Long reviewId) {
+        Long userId = jdbcTemplate.queryForObject("select user_id from reviews where review_id = ?", Long.class, reviewId);
         if (jdbcTemplate.update("delete "
                 + "from REVIEWS "
                 + "where REVIEW_ID = ?", reviewId) == 0) {
             return Optional.empty();
         } else {
-            return Optional.of(false);
+            assert userId != null;
+            return Optional.of(userId);
         }
     }
 

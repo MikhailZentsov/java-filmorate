@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.*;
 import ru.yandex.practicum.filmorate.model.Review;
+import ru.yandex.practicum.filmorate.service.EventService;
 import ru.yandex.practicum.filmorate.service.ReviewService;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.ReviewStorage;
@@ -18,6 +19,7 @@ public class DbReviewServiceImpl implements ReviewService {
     private final ReviewStorage reviewStorage;
     private final UserStorage userStorage;
     private final FilmStorage filmStorage;
+    private final EventService eventService;
 
     @Override
     public Review getReview(Long reviewId) {
@@ -42,21 +44,28 @@ public class DbReviewServiceImpl implements ReviewService {
                 "Пользователь с ID %s не найден", review.getUserId())));
         filmStorage.getById(review.getFilmId()).orElseThrow(() -> new FilmNotFoundException(String.format(
                 "Фильм с ID %s не найден", review.getFilmId())));
-        return reviewStorage.saveReview(review).orElseThrow(() -> new ReviewAlreadyExistsException(String.format(
+        Review result = reviewStorage.saveReview(review).orElseThrow(() -> new ReviewAlreadyExistsException(String.format(
                 "Отзыв с ID %s уже существует", review.getReviewId())));
+        eventService.createAddReviewEvent(result.getUserId(), result.getReviewId());
+
+        return result;
     }
 
     @Override
     public Review updateReview(Review review) {
         reviewStorage.getById(review.getReviewId()).orElseThrow(() -> new ReviewNotFoundException(String.format(
                 "Отзыв с ID %s не найден", review.getReviewId())));
-        return reviewStorage.updateReview(review).get();
+        Review result = reviewStorage.updateReview(review).get();
+        eventService.createUpdateReviewEvent(result.getUserId(), result.getReviewId());
+
+        return result;
     }
 
     @Override
     public void removeReview(Long reviewId) {
-        reviewStorage.removeReview(reviewId).orElseThrow(() -> new ReviewNotFoundException(String.format(
+        Long userId = reviewStorage.removeReview(reviewId).orElseThrow(() -> new ReviewNotFoundException(String.format(
                 "Отзыв с ID %s не найден", reviewId)));
+        eventService.createRemoveReviewEvent(userId, reviewId);
     }
 
     @Override

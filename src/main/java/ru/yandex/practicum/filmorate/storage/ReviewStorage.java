@@ -17,7 +17,7 @@ public interface ReviewStorage {
 
     Optional<Review> updateReview(Review review);
 
-    Optional<Boolean> removeReview(Long reviewId);
+    Optional<Long> removeReview(Long reviewId);
 
     void addReviewReaction(Long reviewId, Long userId, int reaction);
 
