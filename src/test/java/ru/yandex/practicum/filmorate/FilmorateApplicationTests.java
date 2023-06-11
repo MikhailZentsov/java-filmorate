@@ -102,7 +102,6 @@ class FilmorateApplicationTests {
     @Test
     public void testGetReviewsByFilmId() {
         userStorage.saveOne(userOne);
-
         filmStorage.saveOne(filmOne);
         filmStorage.saveOne(filmTwo);
 
