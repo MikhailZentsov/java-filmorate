@@ -169,9 +169,7 @@ public class DbFilmStorageImpl implements FilmStorage {
             }
         });
 
-        film.setId(filmId);
-
-        return Optional.of(film);
+        return getById(filmId);
     }
 
     @Override
@@ -473,12 +471,13 @@ public class DbFilmStorageImpl implements FilmStorage {
         jdbcTemplate.update(sqlQueryDeleteLikes, idFilm, idUser);
     }
     @Override
-    public Optional<Film> deleteFilmById(long filmId) {
-        Optional<Film> film = getById(filmId);
+    public Optional<Boolean> deleteFilmById(long filmId) {
         String sqlQueryDeleteFilm = "delete from FILMS where FILM_ID = ?;";
-        jdbcTemplate.update(sqlQueryDeleteFilm, filmId);
+        if (jdbcTemplate.update(sqlQueryDeleteFilm, filmId) == 0) {
+            return Optional.empty();
+        }
 
-        return film;
+        return Optional.of(true);
     }
 
     @Override

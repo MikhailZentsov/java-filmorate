@@ -143,12 +143,13 @@ public class DbUserStorageImpl implements UserStorage {
         return findAllFriendsById(idUser);
     }
     @Override
-    public Optional<User> deleteUserById(long userId) {
-        Optional<User> user = getById(userId);
+    public Optional<Boolean> deleteUserById(long userId) {
         String sqlQueryDeleteUser = "delete from USERS where USER_ID = ?;";
-        jdbcTemplate.update(sqlQueryDeleteUser, userId);
+        if (jdbcTemplate.update(sqlQueryDeleteUser, userId) == 0) {
+            return Optional.empty();
+        }
 
-        return user;
+        return Optional.of(true);
     }
 
     @Override

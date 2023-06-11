@@ -457,9 +457,7 @@ class FilmorateApplicationTests {
 
         assertTrue(emptyListFilmsAfterLike.isEmpty());
     }
-		assertTrue(friendsUserOne.isPresent());
-		assertTrue(friendsUserOne.get().isEmpty());
-	}
+
 	@Test
 	void deleteFilmById() {
 		filmStorage.saveOne(filmOne);
