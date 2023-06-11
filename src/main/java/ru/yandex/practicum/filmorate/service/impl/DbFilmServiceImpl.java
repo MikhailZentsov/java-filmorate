@@ -78,6 +78,17 @@ public class DbFilmServiceImpl implements FilmService {
     }
 
     @Override
+    public List<Film> getFilmsWithQueryByTitleAndDirector(String query, List<String> by) {
+        List<String> listBy = new ArrayList<>();
+        listBy.add("title");
+        listBy.add("director");
+
+        by.retainAll(listBy);
+
+        return filmStorage.findFilmsByNameAndDirector(query, by);
+    }
+
+    @Override
     public List<Film> getCommonFilms(Long userId, Long friendId) {
         return filmStorage.getCommonFilms(userId, friendId);
     }
