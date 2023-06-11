@@ -458,34 +458,35 @@ class FilmorateApplicationTests {
         assertTrue(emptyListFilmsAfterLike.isEmpty());
     }
 
-	@Test
-	void deleteFilmById() {
-		filmStorage.saveOne(filmOne);
-		Optional<List<Film>> filmsOptional = filmStorage.findAll();
+    @Test
+    void deleteFilmById() {
+        filmStorage.saveOne(filmOne);
+        Optional<List<Film>> filmsOptional = filmStorage.findAll();
 
-		assertTrue(filmsOptional.isPresent());
-		assertEquals(filmsOptional.get().size(), 1);
+        assertTrue(filmsOptional.isPresent());
+        assertEquals(filmsOptional.get().size(), 1);
 
-		filmStorage.deleteFilmById(1);
+        filmStorage.deleteFilmById(1);
 
-		filmsOptional = filmStorage.findAll();
+        filmsOptional = filmStorage.findAll();
 
-		assertTrue(filmsOptional.isPresent());
-		assertEquals(filmsOptional.get().size(), 0);
-	}
-	@Test
-	void deleteUserById() {
-		userStorage.saveOne(userOne);
-		Optional<List<User>> usersOptional = userStorage.findAll();
+        assertTrue(filmsOptional.isPresent());
+        assertEquals(filmsOptional.get().size(), 0);
+    }
 
-		assertTrue(usersOptional.isPresent());
-		assertEquals(usersOptional.get().size(), 1);
+    @Test
+    void deleteUserById() {
+        userStorage.saveOne(userOne);
+        Optional<List<User>> usersOptional = userStorage.findAll();
 
-		userStorage.deleteUserById(1);
+        assertTrue(usersOptional.isPresent());
+        assertEquals(usersOptional.get().size(), 1);
 
-		usersOptional = userStorage.findAll();
+        userStorage.deleteUserById(1);
 
-		assertTrue(usersOptional.isPresent());
-		assertEquals(usersOptional.get().size(), 0);
-	}
+        usersOptional = userStorage.findAll();
+
+        assertTrue(usersOptional.isPresent());
+        assertEquals(usersOptional.get().size(), 0);
+    }
 }
