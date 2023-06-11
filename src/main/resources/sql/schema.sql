@@ -70,3 +70,28 @@ create table if not exists PUBLIC.LIKES_FILMS
     constraint FK_LIKES_FILMS_USER_ID
         foreign key (USER_ID) references PUBLIC.USERS
 );
+
+create table if not exists PUBLIC.REVIEWS
+(
+    REVIEW_ID BIGINT auto_increment primary key,
+    CONTENT CHARACTER VARYING not null,
+    IS_POSITIVE BOOLEAN,
+    FILM_ID BIGINT not null,
+    USER_ID BIGINT not null,
+    constraint FK_REVIEWS_FILM_ID
+        foreign key (FILM_ID) references PUBLIC.FILMS on delete cascade,
+    constraint FK_REVIEWS_USER_ID
+        foreign key (USER_ID) references PUBLIC.USERS on delete cascade
+);
+
+create table if not exists PUBLIC.REVIEW_REACTION
+(
+    REVIEW_ID BIGINT not null,
+    USER_ID BIGINT not null,
+    REACTION BIGINT not null,
+    constraint PK_REVIEW_REACTION primary key (REVIEW_ID, USER_ID),
+    constraint FK_REVIEW_REACTION_REVIEW_ID
+        foreign key (REVIEW_ID) references PUBLIC.REVIEWS on delete cascade,
+    constraint FK_REVIEW_REACTION_USER_ID
+        foreign key (USER_ID) references PUBLIC.USERS on delete cascade
+);

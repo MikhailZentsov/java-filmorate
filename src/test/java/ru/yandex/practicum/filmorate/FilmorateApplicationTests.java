@@ -7,14 +7,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.DirtiesContext;
-import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.model.Genre;
-import ru.yandex.practicum.filmorate.model.Mpa;
-import ru.yandex.practicum.filmorate.model.User;
-import ru.yandex.practicum.filmorate.storage.FilmStorage;
-import ru.yandex.practicum.filmorate.storage.GenreStorage;
-import ru.yandex.practicum.filmorate.storage.MpaStorage;
-import ru.yandex.practicum.filmorate.storage.UserStorage;
+import ru.yandex.practicum.filmorate.model.*;
+import ru.yandex.practicum.filmorate.storage.*;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -34,11 +28,14 @@ class FilmorateApplicationTests {
 	private final FilmStorage filmStorage;
 	private final GenreStorage genreStorage;
 	private final MpaStorage mpaStorage;
+	private final ReviewStorage reviewStorage;
 
 	private static User userOne;
 	private static User userTwo;
 	private static Film filmOne;
 	private static Film filmTwo;
+	private static Review reviewOne;
+	private static Review reviewTwo;
 
 	@BeforeEach
 	void setUp() {
@@ -64,6 +61,85 @@ class FilmorateApplicationTests {
 				LocalDate.of(1977, 7, 7),
 				200,
 				Mpa.NC17);
+		reviewOne = new Review("Review_One_Content",
+				true,
+				1L,
+				1L,
+				0L,
+				0L);
+		reviewTwo = new Review("Review_Two_Content",
+				true,
+				1L,
+				2L,
+				0L,
+				0L);
+	}
+
+	@Test
+	public void testGetReviews() {
+		userStorage.saveOne(userOne);
+		filmStorage.saveOne(filmOne);
+
+		reviewStorage.saveReview(reviewOne);
+		reviewStorage.saveReview(reviewTwo);
+
+		assertEquals(reviewStorage.findAll(10).size(), 2);
+	}
+
+	@Test
+	public void testGetReviewsByFilmId() {
+		userStorage.saveOne(userOne);
+
+		filmStorage.saveOne(filmOne);
+		filmStorage.saveOne(filmTwo);
+
+		reviewStorage.saveReview(reviewOne);
+		reviewStorage.saveReview(reviewTwo);
+
+		assertEquals(reviewStorage.findAllByFilmId(2L, 2).size(), 1);
+	}
+	@Test
+	public void testGetReviewById() {
+		userStorage.saveOne(userOne);
+		filmStorage.saveOne(filmOne);
+		reviewStorage.saveReview(reviewOne);
+
+		Optional<Review> reviewOptional = reviewStorage.getById(1L);
+		assertThat(reviewOptional)
+				.isPresent()
+				.hasValueSatisfying(review -> {
+					assertThat(review).hasFieldOrPropertyWithValue("reviewId", 1L);
+					assertThat(review).hasFieldOrPropertyWithValue("content", "Review_One_Content");
+					assertThat(review).hasFieldOrPropertyWithValue("isPositive", true);
+					assertThat(review).hasFieldOrPropertyWithValue("userId", 1L);
+					assertThat(review).hasFieldOrPropertyWithValue("filmId", 1L);
+				});
+	}
+
+	@Test
+	public void testUpdateReview() {
+		filmStorage.saveOne(filmTwo);
+		filmStorage.saveOne(filmTwo);
+		userStorage.saveOne(userOne);
+		reviewStorage.saveReview(reviewOne);
+
+		Review reviewOneUpdate = new Review("Review_One_Content_Update",
+				false,
+				0L,
+				0L,
+				0L,
+				1L);
+
+		Optional<Review> updatedReview = reviewStorage.updateReview(reviewOneUpdate);
+		assertThat(updatedReview)
+				.isPresent()
+				.hasValueSatisfying(review -> {
+					assertThat(review).hasFieldOrPropertyWithValue("reviewId", 1L);
+					assertThat(review).hasFieldOrPropertyWithValue("content", "Review_One_Content_Update");
+					assertThat(review).hasFieldOrPropertyWithValue("isPositive", false);
+					assertThat(review).hasFieldOrPropertyWithValue("userId", 1L);
+					assertThat(review).hasFieldOrPropertyWithValue("filmId", 1L);
+				});
 	}
 
 	@Test
