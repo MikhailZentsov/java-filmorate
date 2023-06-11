@@ -14,6 +14,7 @@ import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.service.FilmService;
 
 import javax.validation.Valid;
+import javax.validation.constraints.NotBlank;
 import java.util.List;
 
 @RestController
@@ -61,5 +62,24 @@ public class FilmController {
                                       @RequestParam(required = false) Integer genreId,
                                       @RequestParam(required = false) String year) {
         return filmService.getTopFilms(count, genreId, year);
+    }
+
+    @GetMapping("/search")
+    public List<Film> getFilmsWithQueryByTitleAndDirector(
+            @RequestParam @NotBlank String query,
+            @RequestParam List<String> by) {
+        return filmService.getFilmsWithQueryByTitleAndDirector(query, by);
+    }
+
+    @GetMapping("/director/{directorId}")
+    public List<Film> getSortedFilmsByDirector(@PathVariable("directorId") Long directorId,
+                                              @RequestParam("sortBy") String sort) {
+        return filmService.getFilmsByDirectorSortedBy(directorId, sort);
+    }
+
+    @GetMapping("/common")
+    public List<Film> getCommonFilms(@RequestParam(name = "userId") long userId,
+                                     @RequestParam(name = "friendId") long friendId) {
+        return filmService.getCommonFilms(userId, friendId);
     }
 }
