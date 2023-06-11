@@ -52,11 +52,16 @@ public class DbFilmServiceImpl implements FilmService {
     }
 
     @Override
-    public List<Film> getTopFilms(Long count) {
-        if (count == null) {
-            count = 10L;
+    public List<Film> getTopFilms(Long count, Integer genreId, String year) {
+        if (genreId != null && year != null) {
+            return filmStorage.getPopularFilms(count, genreId, year);
+        } else if (genreId == null && year == null) {
+            return filmStorage.getPopularFilms(count);
+        } else if (genreId != null) {
+            return filmStorage.getPopularFilms(count, genreId);
+        } else {
+            return filmStorage.getPopularFilms(count, year);
         }
-        return filmStorage.getPopularFilms(count);
     }
 
     @Override
@@ -75,6 +80,17 @@ public class DbFilmServiceImpl implements FilmService {
         filmStorage.getById(idFilm).orElseThrow(() -> new FilmNotFoundException(String.format(
                 "Фильм с ID %s не найден", idFilm)));
         filmStorage.removeLike(idFilm, idUser);
+    }
+
+    @Override
+    public List<Film> getFilmsWithQueryByTitleAndDirector(String query, List<String> by) {
+        List<String> listBy = new ArrayList<>();
+        listBy.add("title");
+        listBy.add("director");
+
+        by.retainAll(listBy);
+
+        return filmStorage.findFilmsByNameAndDirector(query, by);
     }
 
     @Override

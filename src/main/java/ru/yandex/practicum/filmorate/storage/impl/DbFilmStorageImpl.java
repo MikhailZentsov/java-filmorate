@@ -16,7 +16,12 @@ import ru.yandex.practicum.filmorate.storage.mapper.Mapper;
 
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.util.*;
+import java.util.HashMap;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.ArrayList;
+import java.util.Map;
+import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -98,7 +103,7 @@ public class DbFilmStorageImpl implements FilmStorage {
 
         assert film != null;
 
-        String sqlQueryGetGenres = "select GENRE_NAME as genre " +
+        String sqlQueryGetGenres = "select GENRE_NAME " +
                 "from GENRES_FILMS " +
                 "         left join GENRES G on G.GENRE_ID = GENRES_FILMS.GENRE_ID " +
                 "where FILM_ID = ? " +
@@ -115,7 +120,7 @@ public class DbFilmStorageImpl implements FilmStorage {
                 "where FILM_ID = ?";
 
         List<Director> directorsFilms = jdbcTemplate.query(sqlQueryGetDirectors, Mapper::mapToRowDirector, id);
-        film.setDirectors(new HashSet<>(directorsFilms));
+        film.setDirectors(new LinkedHashSet<>(directorsFilms));
 
         return Optional.of(film);
     }
@@ -282,6 +287,171 @@ public class DbFilmStorageImpl implements FilmStorage {
     }
 
     @Override
+    public List<Film> getPopularFilms(Long count, Integer genreId) {
+        String sqlQueryGetPopularFilms = "with filtered_CTE as (" +
+                "select DISTINCT F.FILM_ID, " +
+                "       FILM_DESCRIPTION, " +
+                "       FILM_NAME, " +
+                "       RELEASE_DATE, " +
+                "       DURATION, " +
+                "       RATING_ID " +
+                "from FILMS F " +
+                "       left join GENRES_FILMS GF on F.FILM_ID = GF.FILM_ID " +
+                "where GENRE_ID = ? " +
+                ")" +
+                "select FCTE.FILM_ID as id, " +
+                "       FILM_DESCRIPTION as description, " +
+                "       FILM_NAME as name, " +
+                "       RELEASE_DATE as releaseDate, " +
+                "       DURATION as duration, " +
+                "       RATING_NAME as mpa " +
+                "from filtered_CTE FCTE " +
+                "       left join LIKES_FILMS FL on FL.FILM_ID = FCTE.FILM_ID " +
+                "       left join RATINGS R on R.RATING_ID = FCTE.RATING_ID " +
+                "group by id, " +
+                "       description, " +
+                "       name, " +
+                "       releaseDate, " +
+                "       duration, " +
+                "       mpa " +
+                "order by count(FL.USER_ID) desc " +
+                "limit ?";
+
+        List<Film> films = jdbcTemplate.query(sqlQueryGetPopularFilms, Mapper::mapRowToFilm, genreId, count);
+
+        if (!films.isEmpty()) {
+            Map<Long, Film> mapFilms = films.stream().collect(Collectors.toMap(Film::getId, Function.identity()));
+            String sqlQueryGetAllGenres = "select FG.FILM_ID as filmId, " +
+                    "       G2.GENRE_NAME as genreName, " +
+                    "       G2.GENRE_ID as genreId " +
+                    "from GENRES_FILMS FG " +
+                    "    left join GENRES G2 on FG.GENRE_ID = G2.GENRE_ID " +
+                    "where FG.FILM_ID IN ( " + mapFilms.keySet()
+                    .stream()
+                    .map(String::valueOf)
+                    .collect(Collectors.joining(",")) + " ) " +
+                    "order by genreId ";
+            List<Map<String, Object>> genres = jdbcTemplate.queryForList(sqlQueryGetAllGenres);
+            genres.forEach(t -> mapFilms.get(Long.parseLong(t.get("filmId").toString()))
+                    .getGenres()
+                    .add(Genre.valueOf(t.get("genreName").toString())
+                    ));
+        }
+
+        return films;
+    }
+
+    @Override
+    public List<Film> getPopularFilms(Long count, String year) {
+        String sqlQueryGetPopularFilms = "with filtered_CTE as (" +
+                "select DISTINCT F.FILM_ID, " +
+                "       FILM_DESCRIPTION, " +
+                "       FILM_NAME, " +
+                "       RELEASE_DATE, " +
+                "       DURATION, " +
+                "       RATING_ID " +
+                "from FILMS F " +
+                "where EXTRACT(YEAR FROM f.RELEASE_DATE) = ? " +
+                ")" +
+                "select FCTE.FILM_ID as id, " +
+                "       FILM_DESCRIPTION as description, " +
+                "       FILM_NAME as name, " +
+                "       RELEASE_DATE as releaseDate, " +
+                "       DURATION as duration, " +
+                "       RATING_NAME as mpa " +
+                "from filtered_CTE FCTE " +
+                "       left join LIKES_FILMS FL on FL.FILM_ID = FCTE.FILM_ID " +
+                "       left join RATINGS R on R.RATING_ID = FCTE.RATING_ID " +
+                "group by id, " +
+                "       description, " +
+                "       name, " +
+                "       releaseDate, " +
+                "       duration, " +
+                "       mpa " +
+                "order by count(FL.USER_ID) desc " +
+                "limit ?";
+
+        List<Film> films = jdbcTemplate.query(sqlQueryGetPopularFilms, Mapper::mapRowToFilm, year, count);
+
+        if (!films.isEmpty()) {
+            Map<Long, Film> mapFilms = films.stream().collect(Collectors.toMap(Film::getId, Function.identity()));
+            String sqlQueryGetAllGenres = "select FG.FILM_ID as filmId, " +
+                    "       G2.GENRE_NAME as genreName, " +
+                    "       G2.GENRE_ID as genreId " +
+                    "from GENRES_FILMS FG " +
+                    "    left join GENRES G2 on FG.GENRE_ID = G2.GENRE_ID " +
+                    "where FG.FILM_ID IN ( " + mapFilms.keySet()
+                    .stream()
+                    .map(String::valueOf)
+                    .collect(Collectors.joining(",")) + " ) " +
+                    "order by genreId ";
+            List<Map<String, Object>> genres = jdbcTemplate.queryForList(sqlQueryGetAllGenres);
+            genres.forEach(t -> mapFilms.get(Long.parseLong(t.get("filmId").toString()))
+                    .getGenres()
+                    .add(Genre.valueOf(t.get("genreName").toString())
+                    ));
+        }
+
+        return films;
+    }
+
+    @Override
+    public List<Film> getPopularFilms(Long count, Integer genreId, String year) {
+        String sqlQueryGetPopularFilms = "with filtered_CTE as (" +
+                "select DISTINCT F.FILM_ID, " +
+                "       FILM_DESCRIPTION, " +
+                "       FILM_NAME, " +
+                "       RELEASE_DATE, " +
+                "       DURATION, " +
+                "       RATING_ID " +
+                "from FILMS F " +
+                "       left join GENRES_FILMS GF on F.FILM_ID = GF.FILM_ID " +
+                "where GENRE_ID = ? " +
+                "       and EXTRACT(YEAR FROM f.RELEASE_DATE) = ? " +
+                ")" +
+                "select FCTE.FILM_ID as id, " +
+                "       FILM_DESCRIPTION as description, " +
+                "       FILM_NAME as name, " +
+                "       RELEASE_DATE as releaseDate, " +
+                "       DURATION as duration, " +
+                "       RATING_NAME as mpa " +
+                "from filtered_CTE FCTE " +
+                "       left join LIKES_FILMS FL on FL.FILM_ID = FCTE.FILM_ID " +
+                "       left join RATINGS R on R.RATING_ID = FCTE.RATING_ID " +
+                "group by id, " +
+                "       description, " +
+                "       name, " +
+                "       releaseDate, " +
+                "       duration, " +
+                "       mpa " +
+                "order by count(FL.USER_ID) desc " +
+                "limit ?";
+
+        List<Film> films = jdbcTemplate.query(sqlQueryGetPopularFilms, Mapper::mapRowToFilm, genreId, year,count);
+
+        if (!films.isEmpty()) {
+            Map<Long, Film> mapFilms = films.stream().collect(Collectors.toMap(Film::getId, Function.identity()));
+            String sqlQueryGetAllGenres = "select FG.FILM_ID as filmId, " +
+                    "       G2.GENRE_NAME as genreName, " +
+                    "       G2.GENRE_ID as genreId " +
+                    "from GENRES_FILMS FG " +
+                    "    left join GENRES G2 on FG.GENRE_ID = G2.GENRE_ID " +
+                    "where FG.FILM_ID IN ( " + mapFilms.keySet()
+                    .stream()
+                    .map(String::valueOf)
+                    .collect(Collectors.joining(",")) + " ) " +
+                    "order by genreId ";
+            List<Map<String, Object>> genres = jdbcTemplate.queryForList(sqlQueryGetAllGenres);
+            genres.forEach(t -> mapFilms.get(Long.parseLong(t.get("filmId").toString()))
+                    .getGenres()
+                    .add(Genre.valueOf(t.get("genreName").toString())
+                    ));
+        }
+
+        return films;
+    }
+
+    @Override
     public void creatLike(Long idFilm, Long idUser) {
         SimpleJdbcInsert simpleJdbcInsert = new SimpleJdbcInsert(jdbcTemplate)
                 .withTableName("LIKES_FILMS");
@@ -338,7 +508,7 @@ public class DbFilmStorageImpl implements FilmStorage {
                 "JOIN PUBLIC.DIRECTORS_FILMS df ON f.FILM_ID = df.FILM_ID " +
                 "LEFT JOIN PUBLIC.RATINGS R ON R.RATING_ID = f.RATING_ID " +
                 "WHERE df.DIRECTOR_ID = ? " +
-                "ORDER BY YEAR(f.RELEASE_DATE) ASC";
+                "ORDER BY EXTRACT(YEAR FROM f.RELEASE_DATE)";
 
         List<Film> films = jdbcTemplate.query(sqlQueryGetDirectorFilmsSortedByLike, Mapper::mapRowToFilm, directorId);
 
@@ -456,5 +626,102 @@ public class DbFilmStorageImpl implements FilmStorage {
         );
 
         return Optional.of(films);
+    }
+
+    @Override
+    public List<Film> findFilmsByNameAndDirector(String query, List<String> by) {
+        String sqlQuery;
+        String sqlQueryFindFilmsByName = "select FF.FILM_ID             as id, " +
+                "             FILM_NAME              as name, " +
+                "             FILM_DESCRIPTION       as description, " +
+                "             R.RATING_NAME          as mpa, " +
+                "             RELEASE_DATE           as releaseDate, " +
+                "             DURATION               as duration, " +
+                "             COALESCE(LF.USER_ID, 0) as likes " +
+                "      from FILMS FF " +
+                "               left join RATINGS R on FF.RATING_ID = R.RATING_ID " +
+                "               left join LIKES_FILMS LF on FF.FILM_ID = LF.FILM_ID " +
+                "      where FILM_NAME ILIKE CONCAT('%', ?, '%') ";
+        String sqlQueryFindFilmsByDirector = "select F.FILM_ID              as id, " +
+                "             FILM_NAME              as name, " +
+                "             FILM_DESCRIPTION       as description, " +
+                "             R.RATING_NAME          as mpa, " +
+                "             RELEASE_DATE           as releaseDate, " +
+                "             DURATION               as duration, " +
+                "             COALESCE(L.USER_ID, 0) as likes " +
+                "      from FILMS F " +
+                "               left join RATINGS R on F.RATING_ID = R.RATING_ID " +
+                "               inner join DIRECTORS_FILMS DF on F.FILM_ID = DF.FILM_ID " +
+                "               inner join DIRECTORS D on DF.DIRECTOR_ID = D.DIRECTOR_ID " +
+                "               left join LIKES_FILMS L on F.FILM_ID = L.FILM_ID " +
+                "      where DIRECTOR_NAME ILIKE CONCAT('%', ?, '%')";
+
+        String sqlQueryTop = "select id, name, description, mpa, releaseDate, duration " +
+                "from (";
+        String addQueryBottom = ") as t " +
+                "group by id, " +
+                "         name, " +
+                "         description, " +
+                "         mpa, " +
+                "         releaseDate, " +
+                "         duration " +
+                "order by sum(likes) desc, id";
+
+        List<Film> films;
+        if (by.size() == 2) {
+            sqlQuery = sqlQueryTop +
+                    sqlQueryFindFilmsByName +
+                    "union all " +
+                    sqlQueryFindFilmsByDirector +
+                    addQueryBottom;
+            films = jdbcTemplate.query(sqlQuery, Mapper::mapRowToFilm, query, query);
+        } else if (by.contains("title")) {
+            sqlQuery = sqlQueryTop + sqlQueryFindFilmsByName + addQueryBottom;
+            films = jdbcTemplate.query(sqlQuery, Mapper::mapRowToFilm, query);
+        } else if (by.contains("director")) {
+            sqlQuery = sqlQueryTop + sqlQueryFindFilmsByDirector + addQueryBottom;
+            films = jdbcTemplate.query(sqlQuery, Mapper::mapRowToFilm, query);
+        } else {
+            return new ArrayList<>();
+        }
+
+
+
+        if (!films.isEmpty()) {
+            Map<Long, Film> mapFilms = films.stream().collect(Collectors.toMap(Film::getId, Function.identity()));
+            String sqlQueryGetAllGenres = "select FG.FILM_ID as filmId, " +
+                    "       G2.GENRE_NAME as genreName, " +
+                    "       G2.GENRE_ID as genreId " +
+                    "from GENRES_FILMS FG " +
+                    "    left join GENRES G2 on FG.GENRE_ID = G2.GENRE_ID " +
+                    "where FG.FILM_ID IN ( " + mapFilms.keySet()
+                    .stream()
+                    .map(String::valueOf)
+                    .collect(Collectors.joining(",")) + " ) " +
+                    "order by genreId ";
+            List<Map<String, Object>> genres = jdbcTemplate.queryForList(sqlQueryGetAllGenres);
+            genres.forEach(t -> mapFilms.get(Long.parseLong(t.get("filmId").toString()))
+                    .getGenres()
+                    .add(Genre.valueOf(t.get("genreName").toString())
+                    ));
+
+            String sqlQueryGetDirectors = "select FILM_ID as filmId, " +
+                    "       D.DIRECTOR_ID as directorId, " +
+                    "       DIRECTOR_NAME as directorName " +
+                    "from DIRECTORS_FILMS " +
+                    "    inner join DIRECTORS D on D.DIRECTOR_ID = DIRECTORS_FILMS.DIRECTOR_ID " +
+                    "where FILM_ID IN (" + mapFilms.keySet()
+                    .stream()
+                    .map(String::valueOf)
+                    .collect(Collectors.joining(",")) + " )";
+            List<Map<String, Object>> directorsFilms = jdbcTemplate.queryForList(sqlQueryGetDirectors);
+            directorsFilms.forEach(t -> mapFilms.get(Long.parseLong(t.get("filmId").toString())).getDirectors().add(
+                    new Director(
+                            Long.parseLong(t.get("directorId").toString()),
+                            t.get("directorName").toString())
+            ));
+        }
+
+        return films;
     }
 }
