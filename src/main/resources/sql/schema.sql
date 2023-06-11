@@ -21,6 +21,7 @@ create table if not exists PUBLIC.FILMS
     RATING_ID        INTEGER,
     RELEASE_DATE     TIMESTAMP,
     DURATION         INTEGER,
+
     constraint FK_FILM_RATING
         foreign key (RATING_ID) references PUBLIC.RATINGS
 );
@@ -35,6 +36,27 @@ create table if not exists PUBLIC.GENRES_FILMS
         foreign key (FILM_ID) references PUBLIC.FILMS,
     constraint FK_GENRE_FILMS_GENRE
         foreign key (GENRE_ID) references PUBLIC.GENRES
+);
+
+create table if not exists PUBLIC.DIRECTORS
+(
+    DIRECTOR_ID BIGINT auto_increment
+        primary key,
+    DIRECTOR_NAME CHARACTER VARYING(100)
+);
+
+create table if not exists PUBLIC.DIRECTORS_FILMS
+(
+    DIRECTOR_ID BIGINT not null,
+    FILM_ID BIGINT not null,
+    constraint PK_DIRECTORS_FILM
+        primary key (DIRECTOR_ID, FILM_ID),
+    constraint FK_DIRECTORS_FILMS_DIRECTOR_ID
+        foreign key (DIRECTOR_ID) references PUBLIC.DIRECTORS ON
+            DELETE CASCADE ON UPDATE CASCADE,
+    constraint FK_DIRECTORS_FILMS_FILM_ID
+        foreign key (FILM_ID) references PUBLIC.FILMS ON
+            DELETE CASCADE ON UPDATE CASCADE
 );
 
 create table if not exists PUBLIC.USERS
