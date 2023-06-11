@@ -37,8 +37,10 @@ class FilmorateApplicationTests {
 
 	private static User userOne;
 	private static User userTwo;
+	private static User userThree;
 	private static Film filmOne;
 	private static Film filmTwo;
+	private static Film filmThree;
 
 	@BeforeEach
 	void setUp() {
@@ -52,6 +54,11 @@ class FilmorateApplicationTests {
 				"nameTwo",
 				"yandex@yandex.ru",
 				LocalDate.of(1995, 5, 5));
+		userThree = new User(0,
+				"loginThree",
+				"nameThree",
+				"gmail@gmail.com",
+				LocalDate.of(1985, 4, 2));
 		filmOne = new Film(0,
 				"filmOne",
 				"descriptionOne",
@@ -64,6 +71,12 @@ class FilmorateApplicationTests {
 				LocalDate.of(1977, 7, 7),
 				200,
 				Mpa.NC17);
+		filmThree = new Film(0,
+				"filmThree",
+				"descriptionThree",
+				LocalDate.of(2001,4,14),
+				140,
+				Mpa.PG);
 	}
 
 	@Test
@@ -299,6 +312,38 @@ class FilmorateApplicationTests {
 
 		assertTrue(friendsUserOne.isPresent());
 		assertTrue(friendsUserOne.get().isEmpty());
+	}
+
+	@Test
+	void testGetCommonFilms() {
+		userStorage.saveOne(userOne);
+		userStorage.saveOne(userTwo);
+		userStorage.saveOne(userThree);
+		userStorage.saveOneFriend(1L, 2L);
+		filmStorage.saveOne(filmOne);
+		filmStorage.saveOne(filmTwo);
+		filmStorage.saveOne(filmThree);
+		filmStorage.creatLike(1L, 2L);
+
+		List<Film> emptyCommonFilms = filmStorage.getCommonFilms(1L, 2L);
+
+		assertTrue(emptyCommonFilms.isEmpty());
+
+		filmStorage.creatLike(1L, 1L);
+		List<Film> commonFilm = filmStorage.getCommonFilms(1L, 2L);
+
+		assertEquals(filmOne, commonFilm.get(0));
+
+		filmStorage.creatLike(2L, 3L);
+		filmStorage.creatLike(2L, 1L);
+		filmStorage.creatLike(2L, 2L);
+		filmStorage.creatLike(3L, 1L);
+
+		List<Film> commonFilms = filmStorage.getCommonFilms(1L, 2L);
+
+		assertEquals(filmTwo, commonFilms.get(0));
+		assertEquals(filmOne, commonFilms.get(1));
+		assertEquals(2, commonFilms.size());
 	}
 
 	@Test

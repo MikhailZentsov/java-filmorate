@@ -78,6 +78,11 @@ public class DbFilmServiceImpl implements FilmService {
     }
 
     @Override
+    public List<Film> getCommonFilms(Long userId, Long friendId) {
+        return filmStorage.getCommonFilms(userId, friendId);
+    }
+
+    @Override
     public List<Film> getFilmsByDirectorSortedBy(Long directorId, String sort) {
         if (sort.equals("likes")) {
             return filmStorage.getFilmsByDirectorSortedByLikes(directorId, sort).orElseThrow(() ->
