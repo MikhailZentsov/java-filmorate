@@ -185,7 +185,7 @@ public class DbFilmStorageImpl implements FilmStorage {
                 "    DURATION = ? " +
                 "where FILM_ID = ?";
 
-        if(jdbcTemplate.update(sqlQueryUpdateFilms,
+        if (jdbcTemplate.update(sqlQueryUpdateFilms,
                     film.getName(),
                     film.getDescription(),
                     film.getMpa().getId(),
