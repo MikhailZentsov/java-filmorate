@@ -8,7 +8,7 @@ import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.storage.GenreStorage;
-import ru.yandex.practicum.filmorate.storage.mapper.Mapper;
+import ru.yandex.practicum.filmorate.storage.mapper.GenreMapper;
 
 import java.util.List;
 import java.util.Optional;
@@ -24,7 +24,7 @@ public class DbGenreStorageImpl implements GenreStorage {
     public List<Genre> findAll() {
         String sqlQuery = "select GENRE_NAME from GENRES";
 
-        List<Genre> genres = jdbcTemplate.query(sqlQuery, Mapper::mapRowToGenre);
+        List<Genre> genres = jdbcTemplate.query(sqlQuery, GenreMapper::mapRowToGenre);
 
         log.info("Получены все жанры");
 
@@ -38,7 +38,7 @@ public class DbGenreStorageImpl implements GenreStorage {
 
         try {
             Optional<Genre> genre = Optional.ofNullable(jdbcTemplate.queryForObject(sqlQuery,
-                    Mapper::mapRowToGenre,
+                    GenreMapper::mapRowToGenre,
                     id));
             log.info("Жанр с ID = {} получен.", id);
             return genre;

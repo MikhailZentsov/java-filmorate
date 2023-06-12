@@ -8,7 +8,7 @@ import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 import ru.yandex.practicum.filmorate.model.Event;
 import ru.yandex.practicum.filmorate.storage.EventStorage;
-import ru.yandex.practicum.filmorate.storage.mapper.Mapper;
+import ru.yandex.practicum.filmorate.storage.mapper.EventMapper;
 
 import java.util.List;
 
@@ -43,7 +43,7 @@ public class DbEventStorageImpl implements EventStorage {
                 "from EVENTS " +
                 "where USER_ID = ?";
 
-        List<Event> events = jdbcTemplate.query(sqlQueryFindAllById, Mapper::mapRowToEvent, idUser);
+        List<Event> events = jdbcTemplate.query(sqlQueryFindAllById, EventMapper::mapRowToEvent, idUser);
         log.info("Получен список событий пользователя с ID = {}", idUser);
         return events;
     }

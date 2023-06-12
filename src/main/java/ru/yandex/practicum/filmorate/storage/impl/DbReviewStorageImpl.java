@@ -9,7 +9,7 @@ import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 import ru.yandex.practicum.filmorate.model.Review;
 import ru.yandex.practicum.filmorate.storage.ReviewStorage;
-import ru.yandex.practicum.filmorate.storage.mapper.Mapper;
+import ru.yandex.practicum.filmorate.storage.mapper.ReviewMapper;
 
 import java.util.List;
 import java.util.Optional;
@@ -34,7 +34,7 @@ public class DbReviewStorageImpl implements ReviewStorage {
                 "left outer join REVIEW_REACTION as RR on R.REVIEW_ID = RR.REVIEW_ID  " +
                 "GROUP BY R.REVIEW_ID, R.FILM_ID, R.USER_ID, R.CONTENT, R.IS_POSITIVE  " +
                 "ORDER BY USEFUL DESC " +
-                "LIMIT ? ", Mapper::mapRowToReview, count);
+                "LIMIT ? ", ReviewMapper::mapRowToReview, count);
 
         log.info("Получен список всех отзывов с ограничием по количеству равным {} и сортировкой полезности.",
                 count);
@@ -56,7 +56,7 @@ public class DbReviewStorageImpl implements ReviewStorage {
                 + "where FILM_ID = ? "
                 + "group by R.REVIEW_ID, R.FILM_ID, R.USER_ID, R.CONTENT, R.IS_POSITIVE "
                 + "order by USEFUL desc "
-                + "limit ? ", Mapper::mapRowToReview, filmId, count);
+                + "limit ? ", ReviewMapper::mapRowToReview, filmId, count);
 
         log.info("Получен список всех отзывов к фильму ID = {} " +
                         "с ограничием по количеству равным {} и сортировкой полезности.",
@@ -84,7 +84,7 @@ public class DbReviewStorageImpl implements ReviewStorage {
                     + "         R.USER_ID,"
                     + "         CONTENT,"
                     + "         IS_POSITIVE "
-                    + "order by USEFUL desc ", Mapper::mapRowToReview, reviewId));
+                    + "order by USEFUL desc ", ReviewMapper::mapRowToReview, reviewId));
             log.info("Отзыв с ID = {} получен.", reviewId);
 
             return review;

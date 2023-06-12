@@ -9,7 +9,7 @@ import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.storage.DirectorStorage;
-import ru.yandex.practicum.filmorate.storage.mapper.Mapper;
+import ru.yandex.practicum.filmorate.storage.mapper.DirectorMapper;
 
 import java.util.List;
 import java.util.Optional;
@@ -28,7 +28,7 @@ public class DbDirectorStorageImpl implements DirectorStorage {
                 "DIRECTOR_NAME as name " +
                 "from DIRECTORS";
 
-        List<Director> directors = jdbcTemplate.query(sqlQueryGetUsers, Mapper::mapToRowDirector);
+        List<Director> directors = jdbcTemplate.query(sqlQueryGetUsers, DirectorMapper::mapToRowDirector);
         log.info("Получен список деректоров из {} элементов.", directors.size());
 
         return directors;
@@ -45,7 +45,7 @@ public class DbDirectorStorageImpl implements DirectorStorage {
         Director director;
 
         try {
-            director = jdbcTemplate.queryForObject(sqlQueryGetDirector, Mapper::mapToRowDirector, id);
+            director = jdbcTemplate.queryForObject(sqlQueryGetDirector, DirectorMapper::mapToRowDirector, id);
         } catch (DataAccessException e) {
             log.info("Директор с ID = {} не найден.", id);
             return Optional.empty();

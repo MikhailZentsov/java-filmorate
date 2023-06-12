@@ -12,7 +12,9 @@ import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
-import ru.yandex.practicum.filmorate.storage.mapper.Mapper;
+import ru.yandex.practicum.filmorate.storage.mapper.DirectorMapper;
+import ru.yandex.practicum.filmorate.storage.mapper.FilmMapper;
+import ru.yandex.practicum.filmorate.storage.mapper.GenreMapper;
 
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
@@ -45,7 +47,7 @@ public class DbFilmStorageImpl implements FilmStorage {
                 "         left join RATINGS R on F.RATING_ID = R.RATING_ID " +
                 "order by id";
 
-        List<Film> films = jdbcTemplate.query(sqlQueryGetFilms, Mapper::mapRowToFilm);
+        List<Film> films = jdbcTemplate.query(sqlQueryGetFilms, FilmMapper::mapRowToFilm);
 
         log.info("Получены все фильмы.");
 
@@ -102,7 +104,7 @@ public class DbFilmStorageImpl implements FilmStorage {
         Film film;
 
         try {
-            film = jdbcTemplate.queryForObject(sqlQueryGetFilm, Mapper::mapRowToFilm, id);
+            film = jdbcTemplate.queryForObject(sqlQueryGetFilm, FilmMapper::mapRowToFilm, id);
         } catch (DataAccessException e) {
             log.info("Фильма с ID = {} не существует.", id);
             return Optional.empty();
@@ -194,7 +196,7 @@ public class DbFilmStorageImpl implements FilmStorage {
                 "order by count(FL.USER_ID) desc " +
                 "limit ?";
 
-        List<Film> films = jdbcTemplate.query(sqlQueryGetPopularFilms, Mapper::mapRowToFilm, count);
+        List<Film> films = jdbcTemplate.query(sqlQueryGetPopularFilms, FilmMapper::mapRowToFilm, count);
 
         log.info("Получен список популярных фильмов без отборов с ограничением по количеству = {}.",
                 count);
@@ -240,7 +242,7 @@ public class DbFilmStorageImpl implements FilmStorage {
                 "order by count(FL.USER_ID) desc " +
                 "limit ?";
 
-        List<Film> films = jdbcTemplate.query(sqlQueryGetPopularFilms, Mapper::mapRowToFilm, genreId, count);
+        List<Film> films = jdbcTemplate.query(sqlQueryGetPopularFilms, FilmMapper::mapRowToFilm, genreId, count);
 
         log.info("Получен список популярных фильмов с отбором по жанру с ограничением по количеству = {}.",
                 count);
@@ -285,7 +287,7 @@ public class DbFilmStorageImpl implements FilmStorage {
                 "order by count(FL.USER_ID) desc " +
                 "limit ?";
 
-        List<Film> films = jdbcTemplate.query(sqlQueryGetPopularFilms, Mapper::mapRowToFilm, year, count);
+        List<Film> films = jdbcTemplate.query(sqlQueryGetPopularFilms, FilmMapper::mapRowToFilm, year, count);
 
         log.info("Получен список популярных фильмов с отбором по году с ограничением по количеству = {}.",
                 count);
@@ -332,7 +334,7 @@ public class DbFilmStorageImpl implements FilmStorage {
                 "order by count(FL.USER_ID) desc " +
                 "limit ?";
 
-        List<Film> films = jdbcTemplate.query(sqlQueryGetPopularFilms, Mapper::mapRowToFilm, genreId, year, count);
+        List<Film> films = jdbcTemplate.query(sqlQueryGetPopularFilms, FilmMapper::mapRowToFilm, genreId, year, count);
 
         log.info("Получен список популярных фильмов с отбором по жанру и году с ограничением по количеству = {}.",
                 count);
@@ -415,7 +417,7 @@ public class DbFilmStorageImpl implements FilmStorage {
                 "    LEFT JOIN LIKES_FILMS lf ON f.FILM_ID = lf.FILM_ID  " +
                 "GROUP BY id, name, description, mpa, releaseDate, duration " +
                 "ORDER BY count(lf.USER_ID) DESC ";
-        List<Film> films = jdbcTemplate.query(sql, Mapper::mapRowToFilm, userId, friendId);
+        List<Film> films = jdbcTemplate.query(sql, FilmMapper::mapRowToFilm, userId, friendId);
 
         log.info("Получен список фильмов общих между пользователями с ID = {} и ID = {}.", userId, friendId);
 
@@ -434,7 +436,7 @@ public class DbFilmStorageImpl implements FilmStorage {
                 "WHERE df.DIRECTOR_ID = ? " +
                 "ORDER BY EXTRACT(YEAR FROM f.RELEASE_DATE)";
 
-        List<Film> films = jdbcTemplate.query(sqlQueryGetDirectorFilmsSortedByLike, Mapper::mapRowToFilm, directorId);
+        List<Film> films = jdbcTemplate.query(sqlQueryGetDirectorFilmsSortedByLike, FilmMapper::mapRowToFilm, directorId);
 
         log.info("Получен список фильмов с режиссером ID = {} и отсортированных по году.", directorId);
 
@@ -462,7 +464,7 @@ public class DbFilmStorageImpl implements FilmStorage {
                 "GROUP BY id, name, description, mpa, releaseDate, duration " +
                 "ORDER BY COUNT(LF.USER_ID) DESC";
 
-        List<Film> films = jdbcTemplate.query(sqlQueryGetDirectorFilmsSortedByLike, Mapper::mapRowToFilm, directorId);
+        List<Film> films = jdbcTemplate.query(sqlQueryGetDirectorFilmsSortedByLike, FilmMapper::mapRowToFilm, directorId);
 
         log.info("Получен список фильмов с режиссером ID = {} и отсортированных по лайкам.", directorId);
 
@@ -524,19 +526,19 @@ public class DbFilmStorageImpl implements FilmStorage {
                     "union all " +
                     sqlQueryFindFilmsByDirector +
                     addQueryBottom;
-            films = jdbcTemplate.query(sqlQuery, Mapper::mapRowToFilm, query, query);
+            films = jdbcTemplate.query(sqlQuery, FilmMapper::mapRowToFilm, query, query);
             log.info("Получен список фильмов с поиском по подстроке \"{}\" и отбором по {}.",
                     query,
                     by);
         } else if (by.contains("title")) {
             sqlQuery = sqlQueryTop + sqlQueryFindFilmsByName + addQueryBottom;
-            films = jdbcTemplate.query(sqlQuery, Mapper::mapRowToFilm, query);
+            films = jdbcTemplate.query(sqlQuery, FilmMapper::mapRowToFilm, query);
             log.info("Получен список фильмов с поиском по подстроке \"{}\" и отбором по {}.",
                     query,
                     by);
         } else if (by.contains("director")) {
             sqlQuery = sqlQueryTop + sqlQueryFindFilmsByDirector + addQueryBottom;
-            films = jdbcTemplate.query(sqlQuery, Mapper::mapRowToFilm, query);
+            films = jdbcTemplate.query(sqlQuery, FilmMapper::mapRowToFilm, query);
             log.info("Получен список фильмов с поиском по подстроке \"{}\" и отбором по {}.",
                     query,
                     by);
@@ -563,7 +565,7 @@ public class DbFilmStorageImpl implements FilmStorage {
                 "where FILM_ID = ? " +
                 "order by G.GENRE_ID";
 
-        List<Genre> genresFilms = jdbcTemplate.query(sqlQueryGetGenres, Mapper::mapRowToGenre, film.getId());
+        List<Genre> genresFilms = jdbcTemplate.query(sqlQueryGetGenres, GenreMapper::mapRowToGenre, film.getId());
 
         film.setGenres(new LinkedHashSet<>(genresFilms));
         log.info("Фильму с ID = {} добавлены жанры.", film.getId());
@@ -576,7 +578,7 @@ public class DbFilmStorageImpl implements FilmStorage {
                 "    inner join DIRECTORS D on D.DIRECTOR_ID = DIRECTORS_FILMS.DIRECTOR_ID " +
                 "where FILM_ID = ?";
 
-        List<Director> directors = jdbcTemplate.query(sqlQueryGetDirectors, Mapper::mapToRowDirector, film.getId());
+        List<Director> directors = jdbcTemplate.query(sqlQueryGetDirectors, DirectorMapper::mapToRowDirector, film.getId());
 
         film.setDirectors(new LinkedHashSet<>(directors));
         log.info("Фильму с ID = {} добавлены режиссеры.", film.getId());

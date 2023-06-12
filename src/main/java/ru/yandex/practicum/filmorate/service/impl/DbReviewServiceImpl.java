@@ -2,7 +2,8 @@ package ru.yandex.practicum.filmorate.service.impl;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import ru.yandex.practicum.filmorate.exception.*;
+import ru.yandex.practicum.filmorate.exception.AlreadyExistsException;
+import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Review;
 import ru.yandex.practicum.filmorate.service.EventService;
 import ru.yandex.practicum.filmorate.service.ReviewService;
@@ -23,7 +24,7 @@ public class DbReviewServiceImpl implements ReviewService {
     @Override
     public Review getReview(Long reviewId) {
         return reviewStorage.getById(reviewId).orElseThrow(() ->
-                new ReviewNotFoundException(String.format(
+                new NotFoundException(String.format(
                         "Отзыв с ID %s не найден", reviewId)));
     }
 
@@ -33,7 +34,7 @@ public class DbReviewServiceImpl implements ReviewService {
             return reviewStorage.findAll(count);
         } else {
             filmStorage.getById(filmId).orElseThrow(() ->
-                    new FilmNotFoundException(String.format(
+                    new NotFoundException(String.format(
                             "Фильм с ID %s не найден", filmId)));
             return reviewStorage.findAllByFilmId(filmId, count);
         }
@@ -42,13 +43,13 @@ public class DbReviewServiceImpl implements ReviewService {
     @Override
     public Review addReview(Review review) {
         userStorage.getById(review.getUserId()).orElseThrow(() ->
-                new UserNotFoundException(String.format(
+                new NotFoundException(String.format(
                         "Пользователь с ID %s не найден", review.getUserId())));
         filmStorage.getById(review.getFilmId()).orElseThrow(() ->
-                new FilmNotFoundException(String.format(
+                new NotFoundException(String.format(
                         "Фильм с ID %s не найден", review.getFilmId())));
         Review result = reviewStorage.saveReview(review).orElseThrow(() ->
-                new ReviewAlreadyExistsException(String.format(
+                new AlreadyExistsException(String.format(
                         "Отзыв с ID %s уже существует", review.getReviewId())));
         eventService.createAddReviewEvent(result.getUserId(), result.getReviewId());
 
@@ -58,7 +59,7 @@ public class DbReviewServiceImpl implements ReviewService {
     @Override
     public Review updateReview(Review review) {
         Review result = reviewStorage.updateReview(review).orElseThrow(() ->
-                new ReviewNotFoundException(String.format(
+                new NotFoundException(String.format(
                         "Отзыв с ID %s не найден", review.getReviewId())));
         eventService.createUpdateReviewEvent(result.getUserId(), result.getReviewId());
 
@@ -68,7 +69,7 @@ public class DbReviewServiceImpl implements ReviewService {
     @Override
     public void removeReview(Long reviewId) {
         Long userId = reviewStorage.removeReview(reviewId).orElseThrow(() ->
-                new ReviewNotFoundException(String.format(
+                new NotFoundException(String.format(
                         "Отзыв с ID %s не найден", reviewId)));
         eventService.createRemoveReviewEvent(userId, reviewId);
     }
@@ -76,7 +77,7 @@ public class DbReviewServiceImpl implements ReviewService {
     @Override
     public void addReviewReaction(Long reviewId, Long userId, int reaction) {
         userStorage.getById(userId).orElseThrow(() ->
-                new UserNotFoundException(String.format(
+                new NotFoundException(String.format(
                         "Пользователь с ID %s не найден", userId)));
         reviewStorage.addReviewReaction(reviewId, userId, reaction);
     }
@@ -84,10 +85,10 @@ public class DbReviewServiceImpl implements ReviewService {
     @Override
     public void removeReviewReaction(Long reviewId, Long userId) {
         userStorage.getById(userId).orElseThrow(() ->
-                new UserNotFoundException(String.format(
+                new NotFoundException(String.format(
                         "Пользователь с ID %s не найден", userId)));
         reviewStorage.getById(reviewId).orElseThrow(() ->
-                new ReviewNotFoundException(String.format(
+                new NotFoundException(String.format(
                         "Отзыв с ID %s не найден", reviewId)));
         reviewStorage.removeReviewReaction(reviewId, userId);
     }

@@ -12,7 +12,8 @@ import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
-import ru.yandex.practicum.filmorate.storage.mapper.Mapper;
+import ru.yandex.practicum.filmorate.storage.mapper.FilmMapper;
+import ru.yandex.practicum.filmorate.storage.mapper.UserMapper;
 
 import java.util.List;
 import java.util.Map;
@@ -37,7 +38,7 @@ public class DbUserStorageImpl implements UserStorage {
                 "from USERS " +
                 "order by USER_ID";
 
-        List<User> users = jdbcTemplate.query(sqlQueryGetUsers, Mapper::mapRowToUser);
+        List<User> users = jdbcTemplate.query(sqlQueryGetUsers, UserMapper::mapRowToUser);
 
         log.info("Получены все пользователи.");
 
@@ -59,7 +60,7 @@ public class DbUserStorageImpl implements UserStorage {
         User user;
 
         try {
-            user = jdbcTemplate.queryForObject(sqlQueryGetUser, Mapper::mapRowToUser, id);
+            user = jdbcTemplate.queryForObject(sqlQueryGetUser, UserMapper::mapRowToUser, id);
             log.info("Пользователь с ID = {} получен.", id);
         } catch (DataAccessException e) {
             log.info("Пользователь с ID = {} не существует.", id);
@@ -128,7 +129,7 @@ public class DbUserStorageImpl implements UserStorage {
                 "where RU.USER_ID = ?" +
                 "order by id";
 
-        List<User> users = jdbcTemplate.query(sqlQueryGetFriends, Mapper::mapRowToUser, id);
+        List<User> users = jdbcTemplate.query(sqlQueryGetFriends, UserMapper::mapRowToUser, id);
 
         log.info("Список друзей пользователя с ID = {} получен.", id);
 
@@ -210,7 +211,7 @@ public class DbUserStorageImpl implements UserStorage {
                 "         inner join recommended_films_CTE RFC on F.FILM_ID = RFC.FILM_ID " +
                 "order by id";
 
-        List<Film> films = jdbcTemplate.query(sqlQueryGetRecommendationsFilms, Mapper::mapRowToFilm);
+        List<Film> films = jdbcTemplate.query(sqlQueryGetRecommendationsFilms, FilmMapper::mapRowToFilm);
 
         log.info("Пользователю с ID = {} получен список рекомендованных фильмов.", userId);
 
