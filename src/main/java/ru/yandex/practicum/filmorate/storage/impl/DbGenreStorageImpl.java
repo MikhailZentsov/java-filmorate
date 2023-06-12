@@ -37,7 +37,9 @@ public class DbGenreStorageImpl implements GenreStorage {
         String sqlQuery = "select GENRE_NAME from GENRES where GENRE_ID = ?";
 
         try {
-            Optional<Genre> genre = Optional.ofNullable(jdbcTemplate.queryForObject(sqlQuery, Mapper::mapRowToGenre, id));
+            Optional<Genre> genre = Optional.ofNullable(jdbcTemplate.queryForObject(sqlQuery,
+                    Mapper::mapRowToGenre,
+                    id));
             log.info("Жанр с ID = {} получен.", id);
             return genre;
         } catch (DataAccessException e) {

@@ -425,7 +425,8 @@ public class DbFilmStorageImpl implements FilmStorage {
     @Override
     @Transactional
     public List<Film> getFilmsByDirectorSortedByYear(Long directorId) {
-        String sqlQueryGetDirectorFilmsSortedByLike = "SELECT f.FILM_ID as id, f.FILM_NAME as name, f.FILM_DESCRIPTION as description, " +
+        String sqlQueryGetDirectorFilmsSortedByLike =
+                "SELECT f.FILM_ID as id, f.FILM_NAME as name, f.FILM_DESCRIPTION as description, " +
                 "R.RATING_NAME as mpa, F.RELEASE_DATE as releaseDate, F.DURATION as duration " +
                 "FROM PUBLIC.FILMS f " +
                 "JOIN PUBLIC.DIRECTORS_FILMS df ON f.FILM_ID = df.FILM_ID " +
@@ -450,7 +451,8 @@ public class DbFilmStorageImpl implements FilmStorage {
     @Override
     @Transactional
     public List<Film> getFilmsByDirectorSortedByLikes(Long directorId) {
-        String sqlQueryGetDirectorFilmsSortedByLike = "SELECT f.FILM_ID as id, f.FILM_NAME as name, f.FILM_DESCRIPTION as description, " +
+        String sqlQueryGetDirectorFilmsSortedByLike =
+                "SELECT f.FILM_ID as id, f.FILM_NAME as name, f.FILM_DESCRIPTION as description, " +
                 "R.RATING_NAME as mpa, F.RELEASE_DATE as releaseDate, F.DURATION as duration " +
                 "FROM PUBLIC.FILMS f " +
                 "JOIN PUBLIC.DIRECTORS_FILMS df ON f.FILM_ID = df.FILM_ID " +

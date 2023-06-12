@@ -186,18 +186,18 @@ public class DbUserStorageImpl implements UserStorage {
                 "     most_intersection_user_CTE as (select AL.USER_ID, " +
                 "                                           count(*) as total " +
                 "                                    from LIKES_FILMS AL " +
-                "                                             inner join user_likes_CTE UL on UL.FILM_ID = AL.FILM_ID " +
-                "                                                    and NOT AL.USER_ID = UL.USER_ID " +
+                "                                        inner join user_likes_CTE UL on UL.FILM_ID = AL.FILM_ID " +
+                "                                            and NOT AL.USER_ID = UL.USER_ID " +
                 "                                    group by AL.USER_ID " +
                 "                                    order by total desc " +
                 "                                    limit 1), " +
                 "     another_user_films_CTE as (select FILM_ID, " +
-                "                                       FL.USER_ID " +
+                "                                    FL.USER_ID " +
                 "                                from LIKES_FILMS FL " +
-                "                                         inner join most_intersection_user_CTE MIU on FL.USER_ID = MIU.USER_ID), " +
+                "                                    inner join most_intersection_user_CTE MIU on FL.USER_ID = MIU.USER_ID), " +
                 "     recommended_films_CTE as (select AUF.FILM_ID " +
                 "                               from another_user_films_CTE AUF " +
-                "                                        left join user_likes_CTE UL on UL.FILM_ID = AUF.FILM_ID " +
+                "                                   left join user_likes_CTE UL on UL.FILM_ID = AUF.FILM_ID " +
                 "                               where UL.USER_ID IS NULL) " +
                 "select F.FILM_ID        as id, " +
                 "       FILM_NAME        as name, " +
