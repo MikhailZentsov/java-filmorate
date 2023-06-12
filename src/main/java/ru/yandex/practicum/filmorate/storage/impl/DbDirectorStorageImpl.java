@@ -53,6 +53,8 @@ public class DbDirectorStorageImpl implements DirectorStorage {
 
         assert director != null;
 
+        log.info("Директор с ID = {} найден.", id);
+
         return Optional.of(director);
     }
 
@@ -80,6 +82,8 @@ public class DbDirectorStorageImpl implements DirectorStorage {
             log.info("Директор с ID = {} не найден.", director.getId());
             return Optional.empty();
         }
+
+        log.info("Директор с ID = {} обновлен.", director.getId());
 
         return Optional.of(director);
     }

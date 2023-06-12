@@ -1,6 +1,7 @@
 package ru.yandex.practicum.filmorate.storage.impl;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import org.springframework.stereotype.Repository;
@@ -12,6 +13,7 @@ import ru.yandex.practicum.filmorate.storage.mapper.Mapper;
 import java.util.List;
 
 @Repository
+@Slf4j
 @RequiredArgsConstructor
 public class DbEventStorageImpl implements EventStorage {
     private final JdbcTemplate jdbcTemplate;
@@ -23,7 +25,10 @@ public class DbEventStorageImpl implements EventStorage {
                 .withTableName("EVENTS")
                 .usingGeneratedKeyColumns("EVENT_ID");
 
-        simpleJdbcInsert.execute(event.toMap());
+        Long eventId = simpleJdbcInsert.executeAndReturnKey(event.toMap()).longValue();
+        log.info("Создано событие c ID = {} от пользователя с ID = {}",
+                eventId,
+                event.getUserId());
     }
 
     @Override
@@ -38,6 +43,8 @@ public class DbEventStorageImpl implements EventStorage {
                 "from EVENTS " +
                 "where USER_ID = ?";
 
-        return jdbcTemplate.query(sqlQueryFindAllById, Mapper::mapRowToEvent, idUser);
+        List<Event> events = jdbcTemplate.query(sqlQueryFindAllById, Mapper::mapRowToEvent, idUser);
+        log.info("Получен список событий пользователя с ID = {}", idUser);
+        return events;
     }
 }

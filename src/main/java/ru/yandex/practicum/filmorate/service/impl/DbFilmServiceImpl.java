@@ -99,6 +99,9 @@ public class DbFilmServiceImpl implements FilmService {
         listBy.add("director");
 
         by.retainAll(listBy);
+        log.info("Отсечены невалидные параметры в типе отборов. Остаются только {} и {} ",
+                "title",
+                "director");
 
         return filmStorage.findFilmsByNameAndDirector(query, by);
     }
@@ -114,10 +117,10 @@ public class DbFilmServiceImpl implements FilmService {
 
         if (sort.equals("likes")) {
             log.info("Получения фильмов режиссера с сортировкой по лайкам.");
-            return filmStorage.getFilmsByDirectorSortedByLikes(directorId, sort);
+            return filmStorage.getFilmsByDirectorSortedByLikes(directorId);
         } else if (sort.equals("year")) {
             log.info("Получения фильмов режиссера с сортировкой по году.");
-            return filmStorage.getFilmsByDirectorSortedByYear(directorId, sort);
+            return filmStorage.getFilmsByDirectorSortedByYear(directorId);
         } else {
             log.info("Параметр sort = {}. Должен быть либо likes, либо year", sort);
             throw new ValidationParamsException("Параметр sort должен быть либо likes, либо year");

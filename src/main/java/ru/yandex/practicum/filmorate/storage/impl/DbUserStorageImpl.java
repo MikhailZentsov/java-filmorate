@@ -37,7 +37,11 @@ public class DbUserStorageImpl implements UserStorage {
                 "from USERS " +
                 "order by USER_ID";
 
-        return jdbcTemplate.query(sqlQueryGetUsers, Mapper::mapRowToUser);
+        List<User> users = jdbcTemplate.query(sqlQueryGetUsers, Mapper::mapRowToUser);
+
+        log.info("Получены все пользователи.");
+
+        return users;
     }
 
     @Override
@@ -56,7 +60,10 @@ public class DbUserStorageImpl implements UserStorage {
 
         try {
             user = jdbcTemplate.queryForObject(sqlQueryGetUser, Mapper::mapRowToUser, id);
+            log.info("Пользователь с ID = {} получен.", id);
         } catch (DataAccessException e) {
+            log.info("Пользователь с ID = {} не существует.", id);
+
             return Optional.empty();
         }
 
@@ -73,6 +80,8 @@ public class DbUserStorageImpl implements UserStorage {
                 .usingGeneratedKeyColumns("USER_ID");
 
         Long userId = simpleJdbcInsert.executeAndReturnKey(user.toMap()).longValue();
+
+        log.info("Пользователь с ID = {} записан.", userId);
 
         return getById(userId);
     }
@@ -96,8 +105,12 @@ public class DbUserStorageImpl implements UserStorage {
                     user.getId()
             );
         } catch (DataAccessException e) {
+            log.info("Пользователь с ID = {} не существует.", user.getId());
+
             return Optional.empty();
         }
+
+        log.info("Пользователь с ID = {} обновлен.", user.getId());
 
         return getById(user.getId());
     }
@@ -115,7 +128,11 @@ public class DbUserStorageImpl implements UserStorage {
                 "where RU.USER_ID = ?" +
                 "order by id";
 
-        return jdbcTemplate.query(sqlQueryGetFriends, Mapper::mapRowToUser, id);
+        List<User> users = jdbcTemplate.query(sqlQueryGetFriends, Mapper::mapRowToUser, id);
+
+        log.info("Список друзей пользователя с ID = {} получен.", id);
+
+        return users;
     }
 
     @Override
@@ -125,6 +142,8 @@ public class DbUserStorageImpl implements UserStorage {
                 "values (?, ?)";
 
         jdbcTemplate.update(sqlQueryAddFriend, idUser, idFriend);
+
+        log.info("Пользователю с ID = {} добавлен друг с ID = {}.", idUser, idFriend);
 
         return findAllFriendsById(idUser);
     }
@@ -137,6 +156,8 @@ public class DbUserStorageImpl implements UserStorage {
 
         jdbcTemplate.update(sqlQueryRemoveFriend, idUser, idFriend);
 
+        log.info("Пользователю с ID = {} удален друг с ID = {}.", idUser, idFriend);
+
         return findAllFriendsById(idUser);
     }
 
@@ -145,8 +166,12 @@ public class DbUserStorageImpl implements UserStorage {
     public Optional<Boolean> deleteUserById(long userId) {
         String sqlQueryDeleteUser = "delete from USERS where USER_ID = ?;";
         if (jdbcTemplate.update(sqlQueryDeleteUser, userId) == 0) {
+            log.info("Пользователь с ID = {} не существует.", userId);
+
             return Optional.empty();
         }
+
+        log.info("Пользователь с ID = {} удален.", userId);
 
         return Optional.of(true);
     }
@@ -187,6 +212,8 @@ public class DbUserStorageImpl implements UserStorage {
 
         List<Film> films = jdbcTemplate.query(sqlQueryGetRecommendationsFilms, Mapper::mapRowToFilm);
 
+        log.info("Пользователю с ID = {} получен список рекомендованных фильмов.", userId);
+
         if (!films.isEmpty()) {
             Map<Long, Film> mapFilms = films.stream().collect(Collectors.toMap(Film::getId, Function.identity()));
             String sqlQueryGetAllGenres = "select FG.FILM_ID as filmId, " +
@@ -206,6 +233,8 @@ public class DbUserStorageImpl implements UserStorage {
                     .getGenres()
                     .add(Genre.valueOf(t.get("genreName").toString())
                     ));
+
+            log.info("У списка фильмов записаны жанры.");
 
             String sqlQueryGetDirectors = "select FILM_ID as filmId, " +
                     "       D.DIRECTOR_ID as directorId, " +
@@ -228,6 +257,8 @@ public class DbUserStorageImpl implements UserStorage {
                             .name(t.get("directorName").toString())
                             .build()
             ));
+
+            log.info("У списка фильмов записаны режиссеры.");
         }
 
         return films;

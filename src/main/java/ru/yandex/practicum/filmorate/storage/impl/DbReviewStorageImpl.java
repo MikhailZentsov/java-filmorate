@@ -1,6 +1,7 @@
 package ru.yandex.practicum.filmorate.storage.impl;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
@@ -14,6 +15,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
+@Slf4j
 @RequiredArgsConstructor
 public class DbReviewStorageImpl implements ReviewStorage {
 
@@ -22,7 +24,7 @@ public class DbReviewStorageImpl implements ReviewStorage {
     @Override
     @Transactional
     public List<Review> findAll(int count) {
-        return jdbcTemplate.query("select R.REVIEW_ID, " +
+        List<Review> reviews = jdbcTemplate.query("select R.REVIEW_ID, " +
                 "R.FILM_ID,  " +
                 "R.USER_ID,  " +
                 "R.CONTENT,  " +
@@ -33,12 +35,17 @@ public class DbReviewStorageImpl implements ReviewStorage {
                 "GROUP BY R.REVIEW_ID, R.FILM_ID, R.USER_ID, R.CONTENT, R.IS_POSITIVE  " +
                 "ORDER BY USEFUL DESC " +
                 "LIMIT ? ", Mapper::mapRowToReview, count);
+
+        log.info("Получен список всех отзывов с ограничием по количеству равным {} и сортировкой полезности.",
+                count);
+
+        return reviews;
     }
 
     @Override
     @Transactional
     public List<Review> findAllByFilmId(Long filmId, int count) {
-        return jdbcTemplate.query("select R.REVIEW_ID, "
+        List<Review> reviews = jdbcTemplate.query("select R.REVIEW_ID, "
                 + "R.FILM_ID, "
                 + "R.USER_ID, "
                 + "R.CONTENT, "
@@ -50,13 +57,20 @@ public class DbReviewStorageImpl implements ReviewStorage {
                 + "group by R.REVIEW_ID, R.FILM_ID, R.USER_ID, R.CONTENT, R.IS_POSITIVE "
                 + "order by USEFUL desc "
                 + "limit ? ", Mapper::mapRowToReview, filmId, count);
+
+        log.info("Получен список всех отзывов к фильму ID = {} " +
+                        "с ограничием по количеству равным {} и сортировкой полезности.",
+                filmId,
+                count);
+
+        return reviews;
     }
 
     @Override
     @Transactional
     public Optional<Review> getById(Long reviewId) {
         try {
-            return Optional.ofNullable(jdbcTemplate.queryForObject("select R.REVIEW_ID, "
+            Optional<Review> review = Optional.ofNullable(jdbcTemplate.queryForObject("select R.REVIEW_ID, "
                     + "R.FILM_ID, "
                     + "R.USER_ID, "
                     + "R.CONTENT, "
@@ -71,7 +85,11 @@ public class DbReviewStorageImpl implements ReviewStorage {
                     + "         CONTENT,"
                     + "         IS_POSITIVE "
                     + "order by USEFUL desc ", Mapper::mapRowToReview, reviewId));
+            log.info("Отзыв с ID = {} получен.", reviewId);
+
+            return review;
         } catch (DataAccessException e) {
+            log.info("Отзыва с ID = {} не существует.", reviewId);
             return Optional.empty();
         }
     }
@@ -86,6 +104,8 @@ public class DbReviewStorageImpl implements ReviewStorage {
         Long reviewId = simpleJdbcInsert.executeAndReturnKey(review.toMap()).longValue();
         review.setReviewId(reviewId);
 
+        log.info("Отзыв с ID = {} сохранен.", reviewId);
+
         return Optional.of(review);
     }
 
@@ -99,8 +119,13 @@ public class DbReviewStorageImpl implements ReviewStorage {
                 review.getContent(),
                 review.getIsPositive(),
                 review.getReviewId()) == 0) {
+
+            log.info("Отзыва с ID = {} не существует.", review.getReviewId());
+
             return Optional.empty();
         }
+
+        log.info("Отзыв с ID = {} обновлен.", review.getReviewId());
 
         return getById(review.getReviewId());
     }
@@ -115,9 +140,13 @@ public class DbReviewStorageImpl implements ReviewStorage {
         if (jdbcTemplate.update("delete "
                 + "from REVIEWS "
                 + "where REVIEW_ID = ?", reviewId) == 0) {
+            log.info("Отзыва с ID = {} не существует.", reviewId);
+
             return Optional.empty();
         } else {
             assert userId != null;
+            log.info("Отзыв с ID = {} удален.", reviewId);
+
             return Optional.of(userId);
         }
     }
@@ -129,6 +158,10 @@ public class DbReviewStorageImpl implements ReviewStorage {
         jdbcTemplate.update("insert "
                 + "into REVIEW_REACTION (REVIEW_ID, USER_ID, REACTION) "
                 + "values (?, ?, ?)", reviewId, userId, reaction);
+
+        log.info("Отзыву с ID = {} добавлена реакция от пользователя с ID = {}.",
+                reviewId,
+                userId);
     }
 
     @Override
@@ -137,5 +170,8 @@ public class DbReviewStorageImpl implements ReviewStorage {
         jdbcTemplate.update("delete "
                 + "from REVIEW_REACTION "
                 + "where REVIEW_ID = ? and USER_ID = ?", reviewId, userId);
+        log.info("Отзыву с ID = {} удалена реакция от пользователя с ID = {}.",
+                reviewId,
+                userId);
     }
 }

@@ -1,6 +1,7 @@
 package ru.yandex.practicum.filmorate.storage.impl;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
@@ -13,6 +14,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
+@Slf4j
 @RequiredArgsConstructor
 public class DbGenreStorageImpl implements GenreStorage {
     private final JdbcTemplate jdbcTemplate;
@@ -22,7 +24,11 @@ public class DbGenreStorageImpl implements GenreStorage {
     public List<Genre> findAll() {
         String sqlQuery = "select GENRE_NAME from GENRES";
 
-        return jdbcTemplate.query(sqlQuery, Mapper::mapRowToGenre);
+        List<Genre> genres = jdbcTemplate.query(sqlQuery, Mapper::mapRowToGenre);
+
+        log.info("Получены все жанры");
+
+        return genres;
     }
 
     @Override
@@ -31,8 +37,11 @@ public class DbGenreStorageImpl implements GenreStorage {
         String sqlQuery = "select GENRE_NAME from GENRES where GENRE_ID = ?";
 
         try {
-            return Optional.ofNullable(jdbcTemplate.queryForObject(sqlQuery, Mapper::mapRowToGenre, id));
+            Optional<Genre> genre = Optional.ofNullable(jdbcTemplate.queryForObject(sqlQuery, Mapper::mapRowToGenre, id));
+            log.info("Жанр с ID = {} получен.", id);
+            return genre;
         } catch (DataAccessException e) {
+            log.info("Жанр с ID = {} не найден.", id);
             return Optional.empty();
         }
     }
