@@ -144,7 +144,6 @@ public class DbReviewStorageImpl implements ReviewStorage {
 
             return Optional.empty();
         } else {
-            assert userId != null;
             log.info("Отзыв с ID = {} удален.", reviewId);
 
             return Optional.of(userId);

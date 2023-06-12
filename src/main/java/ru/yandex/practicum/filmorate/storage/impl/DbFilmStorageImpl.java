@@ -110,8 +110,6 @@ public class DbFilmStorageImpl implements FilmStorage {
             return Optional.empty();
         }
 
-        assert film != null;
-
         log.info("Получен фильм с ID = {}.", id);
 
         setGenresToOneFilm(film, jdbcTemplate);

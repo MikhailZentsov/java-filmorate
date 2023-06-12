@@ -51,8 +51,6 @@ public class DbDirectorStorageImpl implements DirectorStorage {
             return Optional.empty();
         }
 
-        assert director != null;
-
         log.info("Директор с ID = {} найден.", id);
 
         return Optional.of(director);

@@ -68,8 +68,6 @@ public class DbUserStorageImpl implements UserStorage {
             return Optional.empty();
         }
 
-        assert user != null;
-
         return Optional.of(user);
     }
 
