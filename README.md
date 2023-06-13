@@ -26,9 +26,7 @@
 
 + GET /films/popular?count={count} — возвращает список из первых count фильмов по количеству лайков. Если значение параметра count не задано, возвращает первые 10.
 
-+ GET /films/search/ - поиск фильмов по заголовку и режиссеру
-
-+ GET /films/search?query={query}DATE&by={by} - поиск фильмов по заголовку или директору
++ GET /films/search?query={query}?by={by} - поиск фильмов по заголовку и режиссеру
 
 + GET /films/director/directorId={directorId}?sortBy={sortBy} - получение всех фильмов режиссера с сортировкой по лайкам или годам
 
