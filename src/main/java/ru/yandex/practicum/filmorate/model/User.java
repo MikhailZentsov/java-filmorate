@@ -10,7 +10,9 @@ import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Past;
 import java.time.LocalDate;
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Objects;
 
 @JsonIgnoreProperties(value = {"friends"})
 @Getter
@@ -32,12 +34,7 @@ public class User {
     @Past(message = "Дата рождения не может быть больше текущей даты")
     private LocalDate birthday;
 
-    public User(long id, String login, String name, String email, LocalDate birthday) {
-        this.id = id;
-        this.email = email;
-        this.login = login;
-        this.name = name;
-        this.birthday = birthday;
+    private User() {
     }
 
     public Map<String, Object> toMap() {
@@ -73,5 +70,42 @@ public class User {
                 ", name='" + name + '\'' +
                 ", birthday=" + birthday +
                 '}';
+    }
+
+    public static class Builder {
+        private final User newUser;
+
+        public Builder() {
+            newUser = new User();
+        }
+
+        public Builder id(Long id) {
+            newUser.setId(id);
+            return this;
+        }
+
+        public Builder name(String name) {
+            newUser.setName(name);
+            return this;
+        }
+
+        public Builder login(String login) {
+            newUser.setLogin(login);
+            return this;
+        }
+
+        public Builder email(String email) {
+            newUser.setEmail(email);
+            return this;
+        }
+
+        public Builder birthday(LocalDate birthday) {
+            newUser.setBirthday(birthday);
+            return this;
+        }
+
+        public User build() {
+            return newUser;
+        }
     }
 }

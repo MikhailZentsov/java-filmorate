@@ -9,7 +9,11 @@ import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Positive;
 import javax.validation.constraints.Size;
 import java.time.LocalDate;
-import java.util.*;
+import java.util.HashMap;
+import java.util.LinkedHashSet;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
 
 @Getter
 @Setter
@@ -34,14 +38,11 @@ public class Film {
 
     private Set<Genre> genres;
 
-    public Film(long id, String name, String description, LocalDate releaseDate, Integer duration, Mpa mpa) {
-        this.id = id;
-        this.name = name;
-        this.description = description;
-        this.releaseDate = releaseDate;
-        this.duration = duration;
-        this.mpa = mpa;
+    private Set<Director> directors;
+
+    private Film() {
         genres = new LinkedHashSet<>();
+        directors = new LinkedHashSet<>();
     }
 
     public Map<String, Object> toMap() {
@@ -61,7 +62,10 @@ public class Film {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Film film = (Film) o;
-        return Objects.equals(name, film.name) && Objects.equals(description, film.description) && Objects.equals(releaseDate, film.releaseDate) && Objects.equals(duration, film.duration);
+        return Objects.equals(name, film.name)
+                && Objects.equals(description, film.description)
+                && Objects.equals(releaseDate, film.releaseDate)
+                && Objects.equals(duration, film.duration);
     }
 
     @Override
@@ -79,5 +83,57 @@ public class Film {
                 ", duration=" + duration +
                 ", mpa=" + mpa +
                 '}';
+    }
+
+    public static class Builder {
+        private final Film newFilm;
+
+        public Builder() {
+            newFilm = new Film();
+        }
+
+        public Builder id(Long id) {
+            newFilm.setId(id);
+            return this;
+        }
+
+        public Builder name(String name) {
+            newFilm.setName(name);
+            return this;
+        }
+
+        public Builder description(String description) {
+            newFilm.setDescription(description);
+            return this;
+        }
+
+        public Builder releaseDate(LocalDate releaseDate) {
+            newFilm.setReleaseDate(releaseDate);
+            return this;
+        }
+
+        public Builder duration(int duration) {
+            newFilm.setDuration(duration);
+            return this;
+        }
+
+        public Builder mpa(Mpa mpa) {
+            newFilm.setMpa(mpa);
+            return this;
+        }
+
+        public Builder genres(Set<Genre> genres) {
+            newFilm.setGenres(Objects.requireNonNullElseGet(genres, LinkedHashSet::new));
+            return this;
+        }
+
+        public Builder directors(Set<Director> directors) {
+            newFilm.setDirectors(Objects.requireNonNullElseGet(directors, LinkedHashSet::new));
+            return this;
+        }
+
+        public Film build() {
+            return newFilm;
+        }
     }
 }
