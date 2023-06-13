@@ -32,7 +32,7 @@
 
 + GET /films/director/directorId={directorId}?sortBy={sortBy} - получение всех фильмов режиссера с сортировкой по лайкам или годам
 
-+ GET /films/common?userId={userId}?friendId={friendId}
++ GET /films/common?userId={userId}?friendId={friendId} - получение общих фильмов пользователя и его друга
 
 #### 2. Пользователи
 
@@ -58,13 +58,13 @@
 
 + GET /users/{id}/feed - возвращает ленту событий пользователя
 
-#### 2. Режиссеры
+#### 3. Режиссеры
 
-#### 2. Жанры
+#### 4. Жанры
 
-#### 2. MPA рейтинг
+#### 5. MPA рейтинг
 
-#### 2. Отзывы
+#### 6. Отзывы
 
 
 
