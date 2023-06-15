@@ -198,7 +198,7 @@ public class DbFilmStorageImpl implements FilmStorage {
                 "       RELEASE_DATE, " +
                 "       DURATION, " +
                 "       R.RATING_NAME " +
-                "order by count(FL.USER_ID) desc " +
+                "order by rate desc " +
                 "limit ?";
 
         List<Film> films = jdbcTemplate.query(sqlQueryGetPopularFilms, FilmMapper::mapRowToFilm, count);
@@ -246,7 +246,7 @@ public class DbFilmStorageImpl implements FilmStorage {
                 "       releaseDate, " +
                 "       duration, " +
                 "       mpa " +
-                "order by count(FL.USER_ID) desc " +
+                "order by rate desc " +
                 "limit ?";
 
         List<Film> films = jdbcTemplate.query(sqlQueryGetPopularFilms, FilmMapper::mapRowToFilm, genreId, count);
@@ -294,7 +294,7 @@ public class DbFilmStorageImpl implements FilmStorage {
                 "       releaseDate, " +
                 "       duration, " +
                 "       mpa " +
-                "order by count(FL.USER_ID) desc " +
+                "order by rate desc " +
                 "limit ?";
 
         List<Film> films = jdbcTemplate.query(sqlQueryGetPopularFilms, FilmMapper::mapRowToFilm, year, count);
@@ -343,7 +343,7 @@ public class DbFilmStorageImpl implements FilmStorage {
                 "       releaseDate, " +
                 "       duration, " +
                 "       mpa " +
-                "order by count(FL.USER_ID) desc " +
+                "order by rate desc " +
                 "limit ?";
 
         List<Film> films = jdbcTemplate.query(sqlQueryGetPopularFilms, FilmMapper::mapRowToFilm, genreId, year, count);
