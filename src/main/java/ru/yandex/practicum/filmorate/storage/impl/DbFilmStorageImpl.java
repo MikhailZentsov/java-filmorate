@@ -42,9 +42,11 @@ public class DbFilmStorageImpl implements FilmStorage {
                 "       FILM_DESCRIPTION as description, " +
                 "       R.RATING_NAME    as mpa, " +
                 "       RELEASE_DATE     as releaseDate, " +
-                "       DURATION         as duration " +
+                "       DURATION         as duration, " +
+                "       FR.RATE            as rate " +
                 "from FILMS F " +
                 "         left join RATINGS R on F.RATING_ID = R.RATING_ID " +
+                "         left join FILMS_RATE FR on F.FILM_ID = FR.FILM_ID " +
                 "order by id";
 
         List<Film> films = jdbcTemplate.query(sqlQueryGetFilms, FilmMapper::mapRowToFilm);
@@ -90,16 +92,19 @@ public class DbFilmStorageImpl implements FilmStorage {
     }
 
     @Override
+    @Transactional
     public Optional<Film> getById(Long id) {
         String sqlQueryGetFilm = "select F.FILM_ID          as id, " +
                 "       F.FILM_NAME        as name, " +
                 "       F.FILM_DESCRIPTION as description, " +
                 "       R.RATING_NAME      as mpa, " +
                 "       F.RELEASE_DATE     as releaseDate, " +
-                "       F.DURATION         as duration " +
+                "       F.DURATION         as duration, " +
+                "       FR.RATE            as rate " +
                 "from FILMS F " +
-                "         left join RATINGS R on R.RATING_ID = F.RATING_ID " +
-                "where FILM_ID = ? ";
+                "         left join RATINGS R on F.RATING_ID = R.RATING_ID " +
+                "         left join FILMS_RATE FR on F.FILM_ID = FR.FILM_ID " +
+                "where F.FILM_ID = ? ";
 
         Film film;
 
@@ -181,10 +186,12 @@ public class DbFilmStorageImpl implements FilmStorage {
                 "       FILM_NAME as name, " +
                 "       RELEASE_DATE as releaseDate, " +
                 "       DURATION as duration, " +
-                "       R.RATING_NAME as mpa " +
+                "       R.RATING_NAME as mpa, " +
+                "       FR.RATE as rate " +
                 "from FILMS F " +
                 "       left join LIKES_FILMS FL on FL.FILM_ID = F.FILM_ID " +
                 "       left join RATINGS R on R.RATING_ID = F.RATING_ID " +
+                "       left join FILMS_RATE FR on F.FILM_ID = FR.FILM_ID " +
                 "group by F.FILM_ID, " +
                 "       FILM_DESCRIPTION, " +
                 "       FILM_NAME, " +
@@ -227,10 +234,12 @@ public class DbFilmStorageImpl implements FilmStorage {
                 "       FILM_NAME as name, " +
                 "       RELEASE_DATE as releaseDate, " +
                 "       DURATION as duration, " +
-                "       RATING_NAME as mpa " +
+                "       RATING_NAME as mpa, " +
+                "       RATE as rate " +
                 "from filtered_CTE FCTE " +
-                "       left join LIKES_FILMS FL on FL.FILM_ID = FCTE.FILM_ID " +
-                "       left join RATINGS R on R.RATING_ID = FCTE.RATING_ID " +
+                "       left join LIKES_FILMS FL on FCTE.FILM_ID = FL.FILM_ID " +
+                "       left join RATINGS R on FCTE.RATING_ID = R.RATING_ID " +
+                "       left join FILMS_RATE FR on FCTE.FILM_ID = FR.FILM_ID " +
                 "group by id, " +
                 "       description, " +
                 "       name, " +
@@ -265,6 +274,7 @@ public class DbFilmStorageImpl implements FilmStorage {
                 "       DURATION, " +
                 "       RATING_ID " +
                 "from FILMS F " +
+                "       left join FILMS_RATE FR on F.FILM_ID = FR.FILM_ID " +
                 "where EXTRACT(YEAR FROM f.RELEASE_DATE) = ? " +
                 ")" +
                 "select FCTE.FILM_ID as id, " +
@@ -272,10 +282,12 @@ public class DbFilmStorageImpl implements FilmStorage {
                 "       FILM_NAME as name, " +
                 "       RELEASE_DATE as releaseDate, " +
                 "       DURATION as duration, " +
-                "       RATING_NAME as mpa " +
+                "       RATING_NAME as mpa, " +
+                "       RATE as rate " +
                 "from filtered_CTE FCTE " +
                 "       left join LIKES_FILMS FL on FL.FILM_ID = FCTE.FILM_ID " +
                 "       left join RATINGS R on R.RATING_ID = FCTE.RATING_ID " +
+                "       left join FILMS_RATE FR on FCTE.FILM_ID = FR.FILM_ID " +
                 "group by id, " +
                 "       description, " +
                 "       name, " +
@@ -319,10 +331,12 @@ public class DbFilmStorageImpl implements FilmStorage {
                 "       FILM_NAME as name, " +
                 "       RELEASE_DATE as releaseDate, " +
                 "       DURATION as duration, " +
-                "       RATING_NAME as mpa " +
+                "       RATING_NAME as mpa, " +
+                "       RATE as rate " +
                 "from filtered_CTE FCTE " +
                 "       left join LIKES_FILMS FL on FL.FILM_ID = FCTE.FILM_ID " +
                 "       left join RATINGS R on R.RATING_ID = FCTE.RATING_ID " +
+                "       left join FILMS_RATE FR on FCTE.FILM_ID = FR.FILM_ID " +
                 "group by id, " +
                 "       description, " +
                 "       name, " +
@@ -348,13 +362,14 @@ public class DbFilmStorageImpl implements FilmStorage {
 
     @Override
     @Transactional
-    public void creatLike(Long idFilm, Long idUser) {
+    public void creatLike(Long idFilm, Long idUser, Integer rate) {
         SimpleJdbcInsert simpleJdbcInsert = new SimpleJdbcInsert(jdbcTemplate)
                 .withTableName("LIKES_FILMS");
 
         Map<String, Object> like = new HashMap<>();
         like.put("FILM_ID", idFilm);
         like.put("USER_ID", idUser);
+        like.put("LIKE_RATE", rate);
 
         try {
             simpleJdbcInsert.execute(like);
@@ -408,11 +423,13 @@ public class DbFilmStorageImpl implements FilmStorage {
                 "    f.FILM_DESCRIPTION AS description, " +
                 "    r.RATING_NAME AS mpa, " +
                 "    f.RELEASE_DATE AS releaseDate, " +
-                "    f.DURATION AS duration " +
+                "    f.DURATION AS duration, " +
+                "    RATE as rate " +
                 "FROM FILMS f  " +
                 "    INNER JOIN common_films cf ON f.FILM_ID = cf.FILM_ID " +
                 "    INNER JOIN RATINGS r ON f.RATING_ID = r.RATING_ID " +
                 "    LEFT JOIN LIKES_FILMS lf ON f.FILM_ID = lf.FILM_ID  " +
+                "    LEFT JOIN FILMS_RATE FR on f.FILM_ID = FR.FILM_ID " +
                 "GROUP BY id, name, description, mpa, releaseDate, duration " +
                 "ORDER BY count(lf.USER_ID) DESC ";
         List<Film> films = jdbcTemplate.query(sql, FilmMapper::mapRowToFilm, userId, friendId);
@@ -427,10 +444,11 @@ public class DbFilmStorageImpl implements FilmStorage {
     public List<Film> getFilmsByDirectorSortedByYear(Long directorId) {
         String sqlQueryGetDirectorFilmsSortedByLike =
                 "SELECT f.FILM_ID as id, f.FILM_NAME as name, f.FILM_DESCRIPTION as description, " +
-                "R.RATING_NAME as mpa, F.RELEASE_DATE as releaseDate, F.DURATION as duration " +
+                "R.RATING_NAME as mpa, F.RELEASE_DATE as releaseDate, F.DURATION as duration, RATE as rate " +
                 "FROM PUBLIC.FILMS f " +
                 "JOIN PUBLIC.DIRECTORS_FILMS df ON f.FILM_ID = df.FILM_ID " +
                 "LEFT JOIN PUBLIC.RATINGS R ON R.RATING_ID = f.RATING_ID " +
+                "LEFT JOIN FILMS_RATE FR on f.FILM_ID = FR.FILM_ID " +
                 "WHERE df.DIRECTOR_ID = ? " +
                 "ORDER BY EXTRACT(YEAR FROM f.RELEASE_DATE)";
 
@@ -453,11 +471,12 @@ public class DbFilmStorageImpl implements FilmStorage {
     public List<Film> getFilmsByDirectorSortedByLikes(Long directorId) {
         String sqlQueryGetDirectorFilmsSortedByLike =
                 "SELECT f.FILM_ID as id, f.FILM_NAME as name, f.FILM_DESCRIPTION as description, " +
-                "R.RATING_NAME as mpa, F.RELEASE_DATE as releaseDate, F.DURATION as duration " +
+                "R.RATING_NAME as mpa, F.RELEASE_DATE as releaseDate, F.DURATION as duration, RATE as rate " +
                 "FROM PUBLIC.FILMS f " +
                 "JOIN PUBLIC.DIRECTORS_FILMS df ON f.FILM_ID = df.FILM_ID " +
                 "LEFT JOIN PUBLIC.RATINGS R ON R.RATING_ID = f.RATING_ID " +
                 "LEFT JOIN LIKES_FILMS LF on f.FILM_ID = LF.FILM_ID " +
+                "LEFT JOIN FILMS_RATE FR on f.FILM_ID = FR.FILM_ID " +
                 "WHERE df.DIRECTOR_ID = ? " +
                 "GROUP BY id, name, description, mpa, releaseDate, duration " +
                 "ORDER BY COUNT(LF.USER_ID) DESC";
@@ -487,10 +506,12 @@ public class DbFilmStorageImpl implements FilmStorage {
                 "             R.RATING_NAME          as mpa, " +
                 "             RELEASE_DATE           as releaseDate, " +
                 "             DURATION               as duration, " +
+                "             RATE                   as rate, " +
                 "             COALESCE(LF.USER_ID, 0) as likes " +
                 "      from FILMS FF " +
                 "               left join RATINGS R on FF.RATING_ID = R.RATING_ID " +
                 "               left join LIKES_FILMS LF on FF.FILM_ID = LF.FILM_ID " +
+                "               left join FILMS_RATE FR on FF.FILM_ID = FR.FILM_ID " +
                 "      where FILM_NAME ILIKE CONCAT('%', ?, '%') ";
         String sqlQueryFindFilmsByDirector = "select F.FILM_ID              as id, " +
                 "             FILM_NAME              as name, " +
@@ -498,15 +519,17 @@ public class DbFilmStorageImpl implements FilmStorage {
                 "             R.RATING_NAME          as mpa, " +
                 "             RELEASE_DATE           as releaseDate, " +
                 "             DURATION               as duration, " +
+                "             RATE                   as rate, " +
                 "             COALESCE(L.USER_ID, 0) as likes " +
                 "      from FILMS F " +
                 "               left join RATINGS R on F.RATING_ID = R.RATING_ID " +
                 "               inner join DIRECTORS_FILMS DF on F.FILM_ID = DF.FILM_ID " +
                 "               inner join DIRECTORS D on DF.DIRECTOR_ID = D.DIRECTOR_ID " +
                 "               left join LIKES_FILMS L on F.FILM_ID = L.FILM_ID " +
+                "               left join FILMS_RATE FR on F.FILM_ID = FR.FILM_ID " +
                 "      where DIRECTOR_NAME ILIKE CONCAT('%', ?, '%')";
 
-        String sqlQueryTop = "select id, name, description, mpa, releaseDate, duration " +
+        String sqlQueryTop = "select id, name, description, mpa, releaseDate, duration, rate " +
                 "from (";
         String addQueryBottom = ") as t " +
                 "group by id, " +

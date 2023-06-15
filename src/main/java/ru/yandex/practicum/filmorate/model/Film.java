@@ -36,6 +36,8 @@ public class Film {
 
     private Mpa mpa;
 
+    private Double rate;
+
     private Set<Genre> genres;
 
     private Set<Director> directors;
@@ -129,6 +131,11 @@ public class Film {
 
         public Builder directors(Set<Director> directors) {
             newFilm.setDirectors(Objects.requireNonNullElseGet(directors, LinkedHashSet::new));
+            return this;
+        }
+
+        public Builder rate(Double rate) {
+            newFilm.setRate(rate);
             return this;
         }
 

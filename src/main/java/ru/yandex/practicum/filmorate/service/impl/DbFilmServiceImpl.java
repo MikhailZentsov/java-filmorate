@@ -67,7 +67,7 @@ public class DbFilmServiceImpl implements FilmService {
     }
 
     @Override
-    public void addLike(Long idFilm, Long idUser) {
+    public void addLike(Long idFilm, Long idUser, Integer rate) {
         userStorage.getById(idUser).orElseThrow(() ->
                 new NotFoundException(String.format(
                         "Пользователь с ID %s не найден", idUser)));
@@ -75,7 +75,7 @@ public class DbFilmServiceImpl implements FilmService {
                 new NotFoundException(String.format(
                         "Фильм с ID %s не найден", idFilm)));
 
-        filmStorage.creatLike(idFilm, idUser);
+        filmStorage.creatLike(idFilm, idUser, rate);
         eventService.createAddLikeEvent(idUser, idFilm);
     }
 

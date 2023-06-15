@@ -88,8 +88,9 @@ create table if not exists PUBLIC.RELATIONSHIP_USERS
 
 create table if not exists PUBLIC.LIKES_FILMS
 (
-    FILM_ID BIGINT not null,
-    USER_ID BIGINT not null,
+    FILM_ID   BIGINT  not null,
+    USER_ID   BIGINT  not null,
+    LIKE_RATE INTEGER not null,
     constraint PK_LIKES_FILMS
         primary key (FILM_ID, USER_ID),
     constraint FK_LIKES_FILMS_FILM_ID
@@ -120,8 +121,8 @@ create table if not exists PUBLIC.REVIEWS
         primary key,
     CONTENT     CHARACTER VARYING(1000) not null,
     IS_POSITIVE BOOLEAN,
-    FILM_ID     BIGINT            not null,
-    USER_ID     BIGINT            not null,
+    FILM_ID     BIGINT                  not null,
+    USER_ID     BIGINT                  not null,
     constraint FK_REVIEWS_FILM_ID
         foreign key (FILM_ID) references PUBLIC.FILMS
             on delete cascade on update cascade,
@@ -143,3 +144,25 @@ create table if not exists PUBLIC.REVIEW_REACTION
         foreign key (USER_ID) references PUBLIC.USERS
             on delete cascade on update cascade
 );
+
+create table if not exists PUBLIC.FILMS_RATE
+(
+    FILM_ID BIGINT not null,
+    RATE    DOUBLE not null,
+    constraint PK_FILMS_RATE primary key (FILM_ID),
+    constraint FK_FILMS_RATE_FILM_ID
+        foreign key (FILM_ID) references PUBLIC.FILMS
+            on delete cascade on update cascade
+);
+
+create trigger if not exists LIKE_INSERT
+    after INSERT
+    on PUBLIC.LIKES_FILMS
+    for each row
+call "ru.yandex.practicum.filmorate.storage.trigger.CalcRateTrigger";
+
+create trigger if not exists LIKE_DELETE
+    after DELETE
+    on PUBLIC.LIKES_FILMS
+    for each row
+call "ru.yandex.practicum.filmorate.storage.trigger.CalcRateTrigger";
