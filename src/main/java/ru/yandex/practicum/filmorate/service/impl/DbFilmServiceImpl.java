@@ -51,7 +51,7 @@ public class DbFilmServiceImpl implements FilmService {
 
     @Override
     public List<Film> getTopFilms(Long count, Integer genreId, String year) {
-        if (genreId != null && year != null) {
+        /*if (genreId != null && year != null) {
             log.info("Получение фильмов с отбором по жанру и году.");
             return filmStorage.getPopularFilms(count, genreId, year);
         } else if (genreId == null && year == null) {
@@ -63,7 +63,8 @@ public class DbFilmServiceImpl implements FilmService {
         } else {
             log.info("Получение  с отбором по году");
             return filmStorage.getPopularFilms(count, year);
-        }
+        }*/
+        return filmStorage.getPopularFilms(count, genreId, year);
     }
 
     @Override
