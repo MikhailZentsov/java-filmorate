@@ -457,10 +457,10 @@ class FilmorateApplicationTests {
 
         assertTrue(emptyListFilms.isEmpty());
 
-        filmStorage.creatLike(1L, 1L, 1);
-        filmStorage.creatLike(2L, 1L, 1);
-        filmStorage.creatLike(1L, 2L, 1);
-        filmStorage.creatLike(3L, 2L, 1);
+        filmStorage.createLike(1L, 1L, 1);
+        filmStorage.createLike(2L, 1L, 1);
+        filmStorage.createLike(1L, 2L, 1);
+        filmStorage.createLike(3L, 2L, 1);
 
         List<Film> oneFilmRecommended = userStorage.findRecommendationsFilms(1L);
 
@@ -473,7 +473,7 @@ class FilmorateApplicationTests {
                 .hasFieldOrPropertyWithValue("duration", 100)
                 .hasFieldOrPropertyWithValue("mpa", Mpa.G);
 
-        filmStorage.creatLike(3L, 1L, 1);
+        filmStorage.createLike(3L, 1L, 1);
 
         List<Film> emptyListFilmsAfterLike = userStorage.findRecommendationsFilms(1L);
 
