@@ -15,6 +15,7 @@ import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.service.FilmService;
 
 import javax.validation.Valid;
+import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotBlank;
 import java.util.List;
@@ -49,8 +50,10 @@ public class FilmController {
     }
 
     @PutMapping("/{id}/like/{userId}")
-    public void addLike(@PathVariable Long id, @PathVariable Long userId) {
-        filmService.addLike(id, userId);
+    public void addLike(@PathVariable Long id,
+                        @PathVariable Long userId,
+                        @RequestParam @Min(1) @Max(10) Integer rate) {
+        filmService.addLike(id, userId, rate);
     }
 
     @DeleteMapping("/{id}/like/{userId}")

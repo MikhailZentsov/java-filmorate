@@ -179,7 +179,8 @@ public class DbUserStorageImpl implements UserStorage {
     @Transactional
     public List<Film> findRecommendationsFilms(Long userId) {
         String sqlQueryGetRecommendationsFilms = "with user_likes_CTE as (select FILM_ID, " +
-                "                               USER_ID " +
+                "                               USER_ID, " +
+                "                               LIKE_RATE " +
                 "                        from LIKES_FILMS " +
                 "                        where USER_ID = " + userId + "), " +
                 "     most_intersection_user_CTE as (select AL.USER_ID, " +
@@ -187,6 +188,7 @@ public class DbUserStorageImpl implements UserStorage {
                 "                                    from LIKES_FILMS AL " +
                 "                                        inner join user_likes_CTE UL on UL.FILM_ID = AL.FILM_ID " +
                 "                                            and NOT AL.USER_ID = UL.USER_ID " +
+                "                                            and AL.LIKE_RATE = UL.LIKE_RATE " +
                 "                                    group by AL.USER_ID " +
                 "                                    order by total desc " +
                 "                                    limit 1), " +
@@ -203,10 +205,13 @@ public class DbUserStorageImpl implements UserStorage {
                 "       FILM_DESCRIPTION as description, " +
                 "       RATING_NAME      as mpa, " +
                 "       RELEASE_DATE     as releaseDate, " +
-                "       DURATION         as duration " +
+                "       DURATION         as duration, " +
+                "       RATE             as rate " +
                 "from FILMS F " +
                 "         left join RATINGS R on R.RATING_ID = F.RATING_ID " +
                 "         inner join recommended_films_CTE RFC on F.FILM_ID = RFC.FILM_ID " +
+                "         left join FILMS_RATE FR on F.FILM_ID = FR.FILM_ID " +
+                "where RATE > 5 " +
                 "order by id";
 
         List<Film> films = jdbcTemplate.query(sqlQueryGetRecommendationsFilms, FilmMapper::mapRowToFilm);
