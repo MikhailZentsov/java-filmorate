@@ -421,21 +421,21 @@ class FilmorateApplicationTests {
         filmStorage.saveOne(filmOne);
         filmStorage.saveOne(filmTwo);
         filmStorage.saveOne(filmThree);
-        filmStorage.creatLike(1L, 2L, 1);
+        filmStorage.createLike(1L, 2L, 1);
 
         List<Film> emptyCommonFilms = filmStorage.getCommonFilms(1L, 2L);
 
         assertTrue(emptyCommonFilms.isEmpty());
 
-        filmStorage.creatLike(1L, 1L, 1);
+        filmStorage.createLike(1L, 1L, 1);
         List<Film> commonFilm = filmStorage.getCommonFilms(1L, 2L);
 
         assertEquals(filmOne, commonFilm.get(0));
 
-        filmStorage.creatLike(2L, 3L, 1);
-        filmStorage.creatLike(2L, 1L, 1);
-        filmStorage.creatLike(2L, 2L, 1);
-        filmStorage.creatLike(3L, 1L, 1);
+        filmStorage.createLike(2L, 3L, 1);
+        filmStorage.createLike(2L, 1L, 1);
+        filmStorage.createLike(2L, 2L, 1);
+        filmStorage.createLike(3L, 1L, 1);
 
         List<Film> commonFilms = filmStorage.getCommonFilms(1L, 2L);
 

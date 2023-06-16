@@ -75,7 +75,7 @@ public class DbFilmServiceImpl implements FilmService {
                 new NotFoundException(String.format(
                         "Фильм с ID %s не найден", idFilm)));
 
-        filmStorage.creatLike(idFilm, idUser, rate);
+        filmStorage.createLike(idFilm, idUser, rate);
         eventService.createAddLikeEvent(idUser, idFilm);
     }
 
