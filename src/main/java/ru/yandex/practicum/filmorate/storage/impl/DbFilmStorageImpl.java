@@ -241,20 +241,27 @@ public class DbFilmStorageImpl implements FilmStorage {
     @Override
     @Transactional
     public void createLike(Long idFilm, Long idUser, Integer rate) {
-        SimpleJdbcInsert simpleJdbcInsert = new SimpleJdbcInsert(jdbcTemplate)
-                .withTableName("LIKES_FILMS");
+        Map<String, Object> params = new HashMap<>();
+        params.put("film_id", idFilm);
+        params.put("user_id", idUser);
+        params.put("like_rate", rate);
 
-        Map<String, Object> like = new HashMap<>();
-        like.put("FILM_ID", idFilm);
-        like.put("USER_ID", idUser);
-        like.put("LIKE_RATE", rate);
+        String sqlQueryAddUpdateLike = "merge into LIKES_FILMS as LF    " +
+                "using (" +
+                "   values(:film_id, :user_id, :like_rate)" +
+                ") as SR " +
+                "on (LF.FILM_ID = :film_id and " +
+                "   LF.USER_ID = :user_id) " +
+                "when matched then " +
+                "   update" +
+                "       set LF.LIKE_RATE = :like_rate " +
+                "when not matched then " +
+                "    insert " +
+                "    values (:film_id, :user_id, :like_rate)";
 
-        try {
-            simpleJdbcInsert.execute(like);
-            log.info("Лайк от пользователя ID = {} фильму ID = {} добавлен.", idUser, idFilm);
-        } catch (RuntimeException e) {
-            log.info("Лайк от пользователя ID = {} фильму ID = {} уже существует.", idUser, idFilm);
-        }
+        namedParameterJdbcTemplate.update(sqlQueryAddUpdateLike, new MapSqlParameterSource(params));
+
+        log.info("Лайк от пользователя ID = {} фильму ID = {} записан.", idUser, idFilm);
     }
 
     @Override

@@ -455,12 +455,23 @@ class FilmorateApplicationTests {
 
         List<Film> emptyListFilms = userStorage.findRecommendationsFilms(1L);
 
-        assertTrue(emptyListFilms.isEmpty());
+        assertTrue(emptyListFilms.isEmpty(),
+                "Список должен быть пуст");
 
         filmStorage.createLike(1L, 1L, 1);
         filmStorage.createLike(2L, 1L, 1);
         filmStorage.createLike(1L, 2L, 1);
         filmStorage.createLike(3L, 2L, 1);
+
+        List<Film> emptyAnotherListFilms = userStorage.findRecommendationsFilms(1L);
+
+        assertTrue(emptyAnotherListFilms.isEmpty(),
+                "Список должен быть пуст");
+
+        filmStorage.createLike(1L, 1L, 8);
+        filmStorage.createLike(2L, 1L, 8);
+        filmStorage.createLike(1L, 2L, 8);
+        filmStorage.createLike(3L, 2L, 8);
 
         List<Film> oneFilmRecommended = userStorage.findRecommendationsFilms(1L);
 
@@ -471,9 +482,10 @@ class FilmorateApplicationTests {
                 .hasFieldOrPropertyWithValue("name", "Some new film")
                 .hasFieldOrPropertyWithValue("releaseDate", LocalDate.of(1949, 1, 1))
                 .hasFieldOrPropertyWithValue("duration", 100)
-                .hasFieldOrPropertyWithValue("mpa", Mpa.G);
+                .hasFieldOrPropertyWithValue("mpa", Mpa.G)
+                .hasFieldOrPropertyWithValue("rate", 8.0);
 
-        filmStorage.createLike(3L, 1L, 1);
+        filmStorage.createLike(3L, 1L, 6);
 
         List<Film> emptyListFilmsAfterLike = userStorage.findRecommendationsFilms(1L);
 

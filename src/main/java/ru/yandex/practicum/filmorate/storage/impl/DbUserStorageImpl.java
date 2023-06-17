@@ -238,7 +238,7 @@ public class DbUserStorageImpl implements UserStorage {
                     .add(Genre.valueOf(t.get("genreName").toString())
                     ));
 
-            log.info("У списка фильмов записаны жанры.");
+            log.info("У списка фильмов получены жанры.");
 
             String sqlQueryGetDirectors = "select FILM_ID as filmId, " +
                     "       D.DIRECTOR_ID as directorId, " +
@@ -262,7 +262,7 @@ public class DbUserStorageImpl implements UserStorage {
                             .build()
             ));
 
-            log.info("У списка фильмов записаны режиссеры.");
+            log.info("У списка фильмов получены режиссеры.");
         }
 
         return films;

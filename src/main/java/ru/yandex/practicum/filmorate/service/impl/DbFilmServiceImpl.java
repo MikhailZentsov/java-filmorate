@@ -112,7 +112,7 @@ public class DbFilmServiceImpl implements FilmService {
             return filmStorage.getFilmsByDirectorSortedByYear(directorId);
         } else {
             log.info("Параметр sort = {}. Должен быть либо likes, либо year", sort);
-            throw new ValidationParamsException("Параметр sort должен быть либо likes, либо year");
+            return new ArrayList<>();
         }
     }
 

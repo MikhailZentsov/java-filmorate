@@ -166,3 +166,9 @@ create trigger if not exists LIKE_DELETE
     on PUBLIC.LIKES_FILMS
     for each row
 call "ru.yandex.practicum.filmorate.storage.trigger.CalcRateTrigger";
+
+create trigger if not exists LIKE_UPDATE
+    after UPDATE
+    on PUBLIC.LIKES_FILMS
+    for each row
+call "ru.yandex.practicum.filmorate.storage.trigger.CalcRateTrigger";
