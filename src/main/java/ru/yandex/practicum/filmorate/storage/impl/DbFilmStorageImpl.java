@@ -201,12 +201,11 @@ public class DbFilmStorageImpl implements FilmStorage {
                 "select F.FILM_ID " +
                 "from FILMS F " +
                 "       left join GENRES_FILMS GF on F.FILM_ID = GF.FILM_ID " +
-                "where (GENRE_ID = :genre_id and :filtered_by_genre) " +
-                "union " +
-                "select FF.FILM_ID " +
-                "from FILMS FF " +
-                "       left join FILMS_RATE FR on FF.FILM_ID = FR.FILM_ID " +
-                "where (EXTRACT(YEAR FROM FF.RELEASE_DATE) = :year and :filtered_by_year) " +
+                "where ((:filtered_by_genre and GENRE_ID = :genre_id) " +
+                "   or " +
+                "       (:filtered_by_year and EXTRACT(YEAR FROM F.RELEASE_DATE) = :year) " +
+                "   or " +
+                "       not (:filtered_by_genre or :filtered_by_year))" +
                 ")" +
                 "select distinct FCTE.FILM_ID as id, " +
                 "       FILM_DESCRIPTION as description, " +
@@ -231,6 +230,7 @@ public class DbFilmStorageImpl implements FilmStorage {
 
         if (!films.isEmpty()) {
             Map<Long, Film> mapFilms = films.stream().collect(Collectors.toMap(Film::getId, Function.identity()));
+
             setGenresToMapFilms(mapFilms, jdbcTemplate);
             setDirectorsToMapFilms(mapFilms, jdbcTemplate);
         }
