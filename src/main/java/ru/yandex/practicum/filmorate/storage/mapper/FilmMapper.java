@@ -16,6 +16,7 @@ public class FilmMapper {
                 .releaseDate(resultSet.getDate("releaseDate").toLocalDate())
                 .duration(resultSet.getInt("duration"))
                 .mpa(Mpa.valueOf(resultSet.getString("mpa")))
+                .rate(resultSet.getDouble("rate"))
                 .build();
     }
 }

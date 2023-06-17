@@ -6,7 +6,6 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import ru.yandex.practicum.filmorate.exception.AlreadyExistsException;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
-import ru.yandex.practicum.filmorate.exception.ValidationParamsException;
 
 import javax.validation.ValidationException;
 import java.util.Map;
@@ -29,8 +28,7 @@ public class ErrorHandler {
         );
     }
 
-    @ExceptionHandler({ValidationParamsException.class,
-            ValidationException.class})
+    @ExceptionHandler({ValidationException.class})
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public Map<String, String> handleValidation(final RuntimeException e) {
         return Map.of(
