@@ -14,7 +14,7 @@ public interface FilmService {
 
     Film updateFilm(Film film);
 
-    List<Film> getTopFilms(Long count, Integer genreId, String year);
+    List<Film> getPopularFilms(Long count, Integer genreId, Integer year);
 
     void addLike(Long idFilm, Long idUser, Integer rate);
 

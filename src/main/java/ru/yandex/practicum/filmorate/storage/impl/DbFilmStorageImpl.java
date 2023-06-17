@@ -5,6 +5,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.BatchPreparedStatementSetter;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
@@ -33,6 +35,7 @@ import java.util.stream.Collectors;
 public class DbFilmStorageImpl implements FilmStorage {
 
     private final JdbcTemplate jdbcTemplate;
+    private final NamedParameterJdbcTemplate namedParameterJdbcTemplate;
 
     @Override
     @Transactional
@@ -180,56 +183,32 @@ public class DbFilmStorageImpl implements FilmStorage {
 
     @Override
     @Transactional
-    public List<Film> getPopularFilms(Long count) {
-        String sqlQueryGetPopularFilms = "select F.FILM_ID as id, " +
-                "       FILM_DESCRIPTION as description, " +
-                "       FILM_NAME as name, " +
-                "       RELEASE_DATE as releaseDate, " +
-                "       DURATION as duration, " +
-                "       R.RATING_NAME as mpa, " +
-                "       FR.RATE as rate " +
-                "from FILMS F " +
-                "       left join LIKES_FILMS FL on FL.FILM_ID = F.FILM_ID " +
-                "       left join RATINGS R on R.RATING_ID = F.RATING_ID " +
-                "       left join FILMS_RATE FR on F.FILM_ID = FR.FILM_ID " +
-                "group by F.FILM_ID, " +
-                "       FILM_DESCRIPTION, " +
-                "       FILM_NAME, " +
-                "       RELEASE_DATE, " +
-                "       DURATION, " +
-                "       R.RATING_NAME " +
-                "order by count(FL.USER_ID) desc " +
-                "limit ?";
-
-        List<Film> films = jdbcTemplate.query(sqlQueryGetPopularFilms, FilmMapper::mapRowToFilm, count);
-
-        log.info("Получен список популярных фильмов без отборов с ограничением по количеству = {}.",
-                count);
-
-        if (!films.isEmpty()) {
-            Map<Long, Film> mapFilms = films.stream().collect(Collectors.toMap(Film::getId, Function.identity()));
-            setGenresToMapFilms(mapFilms, jdbcTemplate);
-            setDirectorsToMapFilms(mapFilms, jdbcTemplate);
+    public List<Film> getPopularFilms(Long count, Integer genreId, Integer year) {
+        Map<String, Object> params = new HashMap<>();
+        params.put("count", count);
+        params.put("filtered_by_genre", false);
+        params.put("filtered_by_year", false);
+        params.put("genre_id", genreId);
+        params.put("year", year);
+        if (genreId != null) {
+            params.put("filtered_by_genre", true);
+        }
+        if (year != null) {
+            params.put("filtered_by_year", true);
         }
 
-        return films;
-    }
-
-    @Override
-    @Transactional
-    public List<Film> getPopularFilms(Long count, Integer genreId) {
         String sqlQueryGetPopularFilms = "with filtered_CTE as (" +
-                "select distinct F.FILM_ID, " +
-                "       FILM_DESCRIPTION, " +
-                "       FILM_NAME, " +
-                "       RELEASE_DATE, " +
-                "       DURATION, " +
-                "       RATING_ID " +
+                "select F.FILM_ID " +
                 "from FILMS F " +
                 "       left join GENRES_FILMS GF on F.FILM_ID = GF.FILM_ID " +
-                "where GENRE_ID = ? " +
+                "where (GENRE_ID = :genre_id and :filtered_by_genre) " +
+                "union " +
+                "select FF.FILM_ID " +
+                "from FILMS FF " +
+                "       left join FILMS_RATE FR on FF.FILM_ID = FR.FILM_ID " +
+                "where (EXTRACT(YEAR FROM FF.RELEASE_DATE) = :year and :filtered_by_year) " +
                 ")" +
-                "select FCTE.FILM_ID as id, " +
+                "select distinct FCTE.FILM_ID as id, " +
                 "       FILM_DESCRIPTION as description, " +
                 "       FILM_NAME as name, " +
                 "       RELEASE_DATE as releaseDate, " +
@@ -237,116 +216,15 @@ public class DbFilmStorageImpl implements FilmStorage {
                 "       RATING_NAME as mpa, " +
                 "       RATE as rate " +
                 "from filtered_CTE FCTE " +
-                "       left join LIKES_FILMS FL on FCTE.FILM_ID = FL.FILM_ID " +
-                "       left join RATINGS R on FCTE.RATING_ID = R.RATING_ID " +
+                "       inner join FILMS F on F.FILM_ID = FCTE.FILM_ID " +
+                "       left join RATINGS R on F.RATING_ID = R.RATING_ID " +
                 "       left join FILMS_RATE FR on FCTE.FILM_ID = FR.FILM_ID " +
-                "group by id, " +
-                "       description, " +
-                "       name, " +
-                "       releaseDate, " +
-                "       duration, " +
-                "       mpa " +
-                "order by count(FL.USER_ID) desc " +
-                "limit ?";
+                "order by rate desc " +
+                "limit :count";
 
-        List<Film> films = jdbcTemplate.query(sqlQueryGetPopularFilms, FilmMapper::mapRowToFilm, genreId, count);
-
-        log.info("Получен список популярных фильмов с отбором по жанру с ограничением по количеству = {}.",
-                count);
-
-        if (!films.isEmpty()) {
-            Map<Long, Film> mapFilms = films.stream().collect(Collectors.toMap(Film::getId, Function.identity()));
-            setGenresToMapFilms(mapFilms, jdbcTemplate);
-            setDirectorsToMapFilms(mapFilms, jdbcTemplate);
-        }
-
-        return films;
-    }
-
-    @Override
-    @Transactional
-    public List<Film> getPopularFilms(Long count, String year) {
-        String sqlQueryGetPopularFilms = "with filtered_CTE as (" +
-                "select distinct F.FILM_ID, " +
-                "       FILM_DESCRIPTION, " +
-                "       FILM_NAME, " +
-                "       RELEASE_DATE, " +
-                "       DURATION, " +
-                "       RATING_ID " +
-                "from FILMS F " +
-                "       left join FILMS_RATE FR on F.FILM_ID = FR.FILM_ID " +
-                "where EXTRACT(YEAR FROM f.RELEASE_DATE) = ? " +
-                ")" +
-                "select FCTE.FILM_ID as id, " +
-                "       FILM_DESCRIPTION as description, " +
-                "       FILM_NAME as name, " +
-                "       RELEASE_DATE as releaseDate, " +
-                "       DURATION as duration, " +
-                "       RATING_NAME as mpa, " +
-                "       RATE as rate " +
-                "from filtered_CTE FCTE " +
-                "       left join LIKES_FILMS FL on FL.FILM_ID = FCTE.FILM_ID " +
-                "       left join RATINGS R on R.RATING_ID = FCTE.RATING_ID " +
-                "       left join FILMS_RATE FR on FCTE.FILM_ID = FR.FILM_ID " +
-                "group by id, " +
-                "       description, " +
-                "       name, " +
-                "       releaseDate, " +
-                "       duration, " +
-                "       mpa " +
-                "order by count(FL.USER_ID) desc " +
-                "limit ?";
-
-        List<Film> films = jdbcTemplate.query(sqlQueryGetPopularFilms, FilmMapper::mapRowToFilm, year, count);
-
-        log.info("Получен список популярных фильмов с отбором по году с ограничением по количеству = {}.",
-                count);
-
-        if (!films.isEmpty()) {
-            Map<Long, Film> mapFilms = films.stream().collect(Collectors.toMap(Film::getId, Function.identity()));
-            setGenresToMapFilms(mapFilms, jdbcTemplate);
-            setDirectorsToMapFilms(mapFilms, jdbcTemplate);
-        }
-
-        return films;
-    }
-
-    @Override
-    @Transactional
-    public List<Film> getPopularFilms(Long count, Integer genreId, String year) {
-        String sqlQueryGetPopularFilms = "with filtered_CTE as (" +
-                "select distinct F.FILM_ID, " +
-                "       FILM_DESCRIPTION, " +
-                "       FILM_NAME, " +
-                "       RELEASE_DATE, " +
-                "       DURATION, " +
-                "       RATING_ID " +
-                "from FILMS F " +
-                "       left join GENRES_FILMS GF on F.FILM_ID = GF.FILM_ID " +
-                "where GENRE_ID = ? " +
-                "       and EXTRACT(YEAR FROM f.RELEASE_DATE) = ? " +
-                ")" +
-                "select FCTE.FILM_ID as id, " +
-                "       FILM_DESCRIPTION as description, " +
-                "       FILM_NAME as name, " +
-                "       RELEASE_DATE as releaseDate, " +
-                "       DURATION as duration, " +
-                "       RATING_NAME as mpa, " +
-                "       RATE as rate " +
-                "from filtered_CTE FCTE " +
-                "       left join LIKES_FILMS FL on FL.FILM_ID = FCTE.FILM_ID " +
-                "       left join RATINGS R on R.RATING_ID = FCTE.RATING_ID " +
-                "       left join FILMS_RATE FR on FCTE.FILM_ID = FR.FILM_ID " +
-                "group by id, " +
-                "       description, " +
-                "       name, " +
-                "       releaseDate, " +
-                "       duration, " +
-                "       mpa " +
-                "order by count(FL.USER_ID) desc " +
-                "limit ?";
-
-        List<Film> films = jdbcTemplate.query(sqlQueryGetPopularFilms, FilmMapper::mapRowToFilm, genreId, year, count);
+        List<Film> films = namedParameterJdbcTemplate.query(sqlQueryGetPopularFilms,
+                new MapSqlParameterSource(params),
+                FilmMapper::mapRowToFilm);
 
         log.info("Получен список популярных фильмов с отбором по жанру и году с ограничением по количеству = {}.",
                 count);

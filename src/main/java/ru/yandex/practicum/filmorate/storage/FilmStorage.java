@@ -14,13 +14,7 @@ public interface FilmStorage {
 
     Optional<Film> updateOne(Film film);
 
-    List<Film> getPopularFilms(Long count);
-
-    List<Film> getPopularFilms(Long count, Integer genreId);
-
-    List<Film> getPopularFilms(Long count, String year);
-
-    List<Film> getPopularFilms(Long count, Integer genreId, String year);
+    List<Film> getPopularFilms(Long count, Integer genreId, Integer year);
 
     void createLike(Long idFilm, Long idUser, Integer rate);
 
