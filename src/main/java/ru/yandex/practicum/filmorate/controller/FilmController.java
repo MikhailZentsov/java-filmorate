@@ -2,6 +2,7 @@ package ru.yandex.practicum.filmorate.controller;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -13,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.service.FilmService;
+import ru.yandex.practicum.filmorate.validator.ValuesAllowedConstraint;
 
 import javax.validation.Valid;
 import javax.validation.constraints.Max;
@@ -24,6 +26,7 @@ import java.util.List;
 @RequestMapping("/films")
 @Slf4j
 @RequiredArgsConstructor
+@Validated
 public class FilmController {
     private final FilmService filmService;
 
@@ -77,7 +80,9 @@ public class FilmController {
 
     @GetMapping("/director/{directorId}")
     public List<Film> getSortedFilmsByDirector(@PathVariable("directorId") Long directorId,
-                                              @RequestParam("sortBy") String sort) {
+                                               @ValuesAllowedConstraint(propName = "sortBy",
+                                                       values = { "likes" , "title" })
+                                                    @RequestParam("sortBy") String sort) {
         return filmService.getFilmsByDirectorSortedBy(directorId, sort);
     }
 
