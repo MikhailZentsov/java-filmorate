@@ -26,5 +26,7 @@ public interface FilmService {
 
     List<Film> getCommonFilms(Long userId, Long friendId);
 
+    List<Film> getRecommendations(Long userId);
+
     void deleteFilmById(long filmId);
 }

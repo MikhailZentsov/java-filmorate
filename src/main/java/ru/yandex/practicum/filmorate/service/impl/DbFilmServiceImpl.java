@@ -117,6 +117,15 @@ public class DbFilmServiceImpl implements FilmService {
     }
 
     @Override
+    public List<Film> getRecommendations(Long userId) {
+        userStorage.getById(userId).orElseThrow(() ->
+                new NotFoundException(String.format(
+                        "Пользователь с ID %s не найден", userId)));
+
+        return filmStorage.findRecommendationsFilms(userId);
+    }
+
+    @Override
     public void deleteFilmById(long filmId) {
         filmStorage.deleteFilmById(filmId).orElseThrow(() ->
                 new NotFoundException(String.format(

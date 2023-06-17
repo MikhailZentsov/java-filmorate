@@ -7,19 +7,12 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
-import ru.yandex.practicum.filmorate.model.Director;
-import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
-import ru.yandex.practicum.filmorate.storage.mapper.FilmMapper;
 import ru.yandex.practicum.filmorate.storage.mapper.UserMapper;
 
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Repository
@@ -173,98 +166,5 @@ public class DbUserStorageImpl implements UserStorage {
         log.info("Пользователь с ID = {} удален.", userId);
 
         return Optional.of(true);
-    }
-
-    @Override
-    @Transactional
-    public List<Film> findRecommendationsFilms(Long userId) {
-        String sqlQueryGetRecommendationsFilms = "with user_likes_CTE as (select FILM_ID, " +
-                "                               USER_ID, " +
-                "                               LIKE_RATE " +
-                "                        from LIKES_FILMS " +
-                "                        where USER_ID = " + userId + "), " +
-                "     most_intersection_user_CTE as (select AL.USER_ID, " +
-                "                                           count(*) as total " +
-                "                                    from LIKES_FILMS AL " +
-                "                                        inner join user_likes_CTE UL on UL.FILM_ID = AL.FILM_ID " +
-                "                                            and NOT AL.USER_ID = UL.USER_ID " +
-                "                                            and AL.LIKE_RATE = UL.LIKE_RATE " +
-                "                                    group by AL.USER_ID " +
-                "                                    order by total desc " +
-                "                                    limit 1), " +
-                "     another_user_films_CTE as (select FILM_ID, " +
-                "                                    FL.USER_ID " +
-                "                                from LIKES_FILMS FL " +
-                "                                    inner join most_intersection_user_CTE MIU on FL.USER_ID = MIU.USER_ID), " +
-                "     recommended_films_CTE as (select AUF.FILM_ID " +
-                "                               from another_user_films_CTE AUF " +
-                "                                   left join user_likes_CTE UL on UL.FILM_ID = AUF.FILM_ID " +
-                "                               where UL.USER_ID IS NULL) " +
-                "select F.FILM_ID        as id, " +
-                "       FILM_NAME        as name, " +
-                "       FILM_DESCRIPTION as description, " +
-                "       RATING_NAME      as mpa, " +
-                "       RELEASE_DATE     as releaseDate, " +
-                "       DURATION         as duration, " +
-                "       RATE             as rate " +
-                "from FILMS F " +
-                "         left join RATINGS R on R.RATING_ID = F.RATING_ID " +
-                "         inner join recommended_films_CTE RFC on F.FILM_ID = RFC.FILM_ID " +
-                "         left join FILMS_RATE FR on F.FILM_ID = FR.FILM_ID " +
-                "where RATE > 5 " +
-                "order by id";
-
-        List<Film> films = jdbcTemplate.query(sqlQueryGetRecommendationsFilms, FilmMapper::mapRowToFilm);
-
-        log.info("Пользователю с ID = {} получен список рекомендованных фильмов.", userId);
-
-        if (!films.isEmpty()) {
-            Map<Long, Film> mapFilms = films.stream().collect(Collectors.toMap(Film::getId, Function.identity()));
-            String sqlQueryGetAllGenres = "select FG.FILM_ID as filmId, " +
-                    "       G2.GENRE_NAME as genreName, " +
-                    "       G2.GENRE_ID as genreId " +
-                    "from GENRES_FILMS FG " +
-                    "    left join GENRES G2 on FG.GENRE_ID = G2.GENRE_ID " +
-                    "where FG.FILM_ID IN ( " +
-                    mapFilms.keySet()
-                            .stream()
-                            .map(String::valueOf)
-                            .collect(Collectors.joining(",")) +
-                    " ) " +
-                    "order by genreId ";
-            List<Map<String, Object>> genres = jdbcTemplate.queryForList(sqlQueryGetAllGenres);
-            genres.forEach(t -> mapFilms.get(Long.parseLong(t.get("filmId").toString()))
-                    .getGenres()
-                    .add(Genre.valueOf(t.get("genreName").toString())
-                    ));
-
-            log.info("У списка фильмов получены жанры.");
-
-            String sqlQueryGetDirectors = "select FILM_ID as filmId, " +
-                    "       D.DIRECTOR_ID as directorId, " +
-                    "       DIRECTOR_NAME as directorName " +
-                    "from DIRECTORS_FILMS " +
-                    "    inner join DIRECTORS D on D.DIRECTOR_ID = DIRECTORS_FILMS.DIRECTOR_ID " +
-                    "where FILM_ID IN (" +
-                    mapFilms.keySet()
-                            .stream()
-                            .map(String::valueOf)
-                            .collect(Collectors.joining(",")) +
-                    " )" +
-                    "order by directorId";
-
-            List<Map<String, Object>> directorsFilms = jdbcTemplate.queryForList(sqlQueryGetDirectors);
-
-            directorsFilms.forEach(t -> mapFilms.get(Long.parseLong(t.get("filmId").toString())).getDirectors().add(
-                    new Director.Builder()
-                            .id(Long.parseLong(t.get("directorId").toString()))
-                            .name(t.get("directorName").toString())
-                            .build()
-            ));
-
-            log.info("У списка фильмов получены режиссеры.");
-        }
-
-        return films;
     }
 }

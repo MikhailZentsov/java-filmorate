@@ -453,7 +453,7 @@ class FilmorateApplicationTests {
         filmOne.setName("Some new film");
         filmStorage.saveOne(filmOne);
 
-        List<Film> emptyListFilms = userStorage.findRecommendationsFilms(1L);
+        List<Film> emptyListFilms = filmStorage.findRecommendationsFilms(1L);
 
         assertTrue(emptyListFilms.isEmpty(),
                 "Список должен быть пуст");
@@ -463,7 +463,7 @@ class FilmorateApplicationTests {
         filmStorage.createLike(1L, 2L, 1);
         filmStorage.createLike(3L, 2L, 1);
 
-        List<Film> emptyAnotherListFilms = userStorage.findRecommendationsFilms(1L);
+        List<Film> emptyAnotherListFilms = filmStorage.findRecommendationsFilms(1L);
 
         assertTrue(emptyAnotherListFilms.isEmpty(),
                 "Список должен быть пуст");
@@ -473,7 +473,7 @@ class FilmorateApplicationTests {
         filmStorage.createLike(1L, 2L, 8);
         filmStorage.createLike(3L, 2L, 8);
 
-        List<Film> oneFilmRecommended = userStorage.findRecommendationsFilms(1L);
+        List<Film> oneFilmRecommended = filmStorage.findRecommendationsFilms(1L);
 
         assertThat(oneFilmRecommended)
                 .hasSize(1);
@@ -487,7 +487,7 @@ class FilmorateApplicationTests {
 
         filmStorage.createLike(3L, 1L, 6);
 
-        List<Film> emptyListFilmsAfterLike = userStorage.findRecommendationsFilms(1L);
+        List<Film> emptyListFilmsAfterLike = filmStorage.findRecommendationsFilms(1L);
 
         assertTrue(emptyListFilmsAfterLike.isEmpty());
     }
