@@ -8,18 +8,23 @@ import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabas
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.DirtiesContext;
 import ru.yandex.practicum.filmorate.model.Director;
+import ru.yandex.practicum.filmorate.model.Event;
+import ru.yandex.practicum.filmorate.model.EventOperation;
+import ru.yandex.practicum.filmorate.model.EventType;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.Mpa;
 import ru.yandex.practicum.filmorate.model.Review;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.DirectorStorage;
+import ru.yandex.practicum.filmorate.storage.EventStorage;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.GenreStorage;
 import ru.yandex.practicum.filmorate.storage.MpaStorage;
 import ru.yandex.practicum.filmorate.storage.ReviewStorage;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
+import java.time.Instant;
 import java.time.LocalDate;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -41,6 +46,7 @@ class FilmorateApplicationTests {
     private final MpaStorage mpaStorage;
     private final ReviewStorage reviewStorage;
     private final DirectorStorage directorStorage;
+    private final EventStorage eventStorage;
 
     private static User userOne;
     private static User userTwo;
@@ -53,6 +59,13 @@ class FilmorateApplicationTests {
     private static Director directorOne;
 
     private static Director directorTwo;
+    private static Event eventOne;
+    private static Event eventTwo;
+    private static Event eventThree;
+    private static Event eventFour;
+    private static Event eventFive;
+    private static Event eventSix;
+    private static Event eventSeven;
 
     @BeforeEach
     void setUp() {
@@ -124,6 +137,62 @@ class FilmorateApplicationTests {
         directorTwo = new Director.Builder()
                 .id(0)
                 .name("directorTwo")
+                .build();
+        eventOne = new Event.Builder()
+                .eventId(1L)
+                .userId(1L)
+                .timestamp(Instant.now().toEpochMilli())
+                .entityId(2L)
+                .eventType(EventType.FRIEND)
+                .eventOperation(EventOperation.ADD)
+                .build();
+        eventTwo = new Event.Builder()
+                .eventId(1L)
+                .userId(1L)
+                .timestamp(Instant.now().toEpochMilli())
+                .entityId(2L)
+                .eventType(EventType.FRIEND)
+                .eventOperation(EventOperation.REMOVE)
+                .build();
+        eventThree = new Event.Builder()
+                .eventId(1L)
+                .userId(1L)
+                .timestamp(Instant.now().toEpochMilli())
+                .entityId(1L)
+                .eventType(EventType.LIKE)
+                .eventOperation(EventOperation.ADD)
+                .build();
+        eventFour = new Event.Builder()
+                .eventId(1L)
+                .userId(1L)
+                .timestamp(Instant.now().toEpochMilli())
+                .entityId(1L)
+                .eventType(EventType.LIKE)
+                .eventOperation(EventOperation.REMOVE)
+                .build();
+        eventFive = new Event.Builder()
+                .eventId(1L)
+                .userId(1L)
+                .timestamp(Instant.now().toEpochMilli())
+                .entityId(1L)
+                .eventType(EventType.REVIEW)
+                .eventOperation(EventOperation.ADD)
+                .build();
+        eventSix = new Event.Builder()
+                .eventId(1L)
+                .userId(1L)
+                .timestamp(Instant.now().toEpochMilli())
+                .entityId(1L)
+                .eventType(EventType.REVIEW)
+                .eventOperation(EventOperation.UPDATE)
+                .build();
+        eventSeven = new Event.Builder()
+                .eventId(1L)
+                .userId(1L)
+                .timestamp(Instant.now().toEpochMilli())
+                .entityId(1L)
+                .eventType(EventType.REVIEW)
+                .eventOperation(EventOperation.REMOVE)
                 .build();
     }
 
@@ -710,6 +779,76 @@ class FilmorateApplicationTests {
                     assertThat(list.get(0)).hasFieldOrPropertyWithValue("duration", 140);
                     assertThat(list.get(0)).hasFieldOrPropertyWithValue("mpa", Mpa.PG);
                     assertThat(list.get(0)).hasFieldOrPropertyWithValue("rate", 10.0);
+                });
+    }
+
+    @Test
+    void eventsTest() {
+        userStorage.saveOne(userOne);
+        userStorage.saveOne(userTwo);
+        filmStorage.saveOne(filmOne);
+        filmStorage.saveOne(filmTwo);
+
+        List<Event> emptyList = eventStorage.findAllById(1L);
+
+        assertTrue(emptyList.isEmpty(),
+                "Список должен быть пуст");
+
+        eventStorage.saveOne(eventOne);
+        eventStorage.saveOne(eventTwo);
+        eventStorage.saveOne(eventThree);
+        eventStorage.saveOne(eventFour);
+        eventStorage.saveOne(eventFive);
+        eventStorage.saveOne(eventSix);
+        eventStorage.saveOne(eventSeven);
+
+        List<Event> eventsUser1 = eventStorage.findAllById(1L);
+
+        assertThat(eventsUser1)
+                .isNotEmpty()
+                .hasSize(7)
+                .satisfies(list -> {
+                    assertThat(list.get(0)).hasFieldOrPropertyWithValue("eventId", 1L);
+                    assertThat(list.get(0)).hasFieldOrPropertyWithValue("userId", 1L);
+                    assertThat(list.get(0)).hasFieldOrPropertyWithValue("entityId", 2L);
+                    assertThat(list.get(0)).hasFieldOrPropertyWithValue("eventType", EventType.FRIEND);
+                    assertThat(list.get(0)).hasFieldOrPropertyWithValue("operation", EventOperation.ADD);
+
+                    assertThat(list.get(1)).hasFieldOrPropertyWithValue("eventId", 2L);
+                    assertThat(list.get(1)).hasFieldOrPropertyWithValue("userId", 1L);
+                    assertThat(list.get(1)).hasFieldOrPropertyWithValue("entityId", 2L);
+                    assertThat(list.get(1)).hasFieldOrPropertyWithValue("eventType", EventType.FRIEND);
+                    assertThat(list.get(1)).hasFieldOrPropertyWithValue("operation", EventOperation.REMOVE);
+
+                    assertThat(list.get(2)).hasFieldOrPropertyWithValue("eventId", 3L);
+                    assertThat(list.get(2)).hasFieldOrPropertyWithValue("userId", 1L);
+                    assertThat(list.get(2)).hasFieldOrPropertyWithValue("entityId", 1L);
+                    assertThat(list.get(2)).hasFieldOrPropertyWithValue("eventType", EventType.LIKE);
+                    assertThat(list.get(2)).hasFieldOrPropertyWithValue("operation", EventOperation.ADD);
+
+                    assertThat(list.get(3)).hasFieldOrPropertyWithValue("eventId", 4L);
+                    assertThat(list.get(3)).hasFieldOrPropertyWithValue("userId", 1L);
+                    assertThat(list.get(3)).hasFieldOrPropertyWithValue("entityId", 1L);
+                    assertThat(list.get(3)).hasFieldOrPropertyWithValue("eventType", EventType.LIKE);
+                    assertThat(list.get(3)).hasFieldOrPropertyWithValue("operation", EventOperation.REMOVE);
+
+                    assertThat(list.get(4)).hasFieldOrPropertyWithValue("eventId", 5L);
+                    assertThat(list.get(4)).hasFieldOrPropertyWithValue("userId", 1L);
+                    assertThat(list.get(4)).hasFieldOrPropertyWithValue("entityId", 1L);
+                    assertThat(list.get(4)).hasFieldOrPropertyWithValue("eventType", EventType.REVIEW);
+                    assertThat(list.get(4)).hasFieldOrPropertyWithValue("operation", EventOperation.ADD);
+
+                    assertThat(list.get(5)).hasFieldOrPropertyWithValue("eventId", 6L);
+                    assertThat(list.get(5)).hasFieldOrPropertyWithValue("userId", 1L);
+                    assertThat(list.get(5)).hasFieldOrPropertyWithValue("entityId", 1L);
+                    assertThat(list.get(5)).hasFieldOrPropertyWithValue("eventType", EventType.REVIEW);
+                    assertThat(list.get(5)).hasFieldOrPropertyWithValue("operation", EventOperation.UPDATE);
+
+                    assertThat(list.get(6)).hasFieldOrPropertyWithValue("eventId", 7L);
+                    assertThat(list.get(6)).hasFieldOrPropertyWithValue("userId", 1L);
+                    assertThat(list.get(6)).hasFieldOrPropertyWithValue("entityId", 1L);
+                    assertThat(list.get(6)).hasFieldOrPropertyWithValue("eventType", EventType.REVIEW);
+                    assertThat(list.get(6)).hasFieldOrPropertyWithValue("operation", EventOperation.REMOVE);
                 });
     }
 }

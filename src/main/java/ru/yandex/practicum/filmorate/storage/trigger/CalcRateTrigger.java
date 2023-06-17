@@ -32,7 +32,7 @@ public class CalcRateTrigger implements Trigger {
                         "    insert " +
                         "    values (source.FILM_ID, source.RATE)")
         ) {
-            stmt.setObject(1, newRow[0]);
+            stmt.setObject(1, newRow != null ? newRow[0] : oldRow[0]);
 
             stmt.executeUpdate();
         }

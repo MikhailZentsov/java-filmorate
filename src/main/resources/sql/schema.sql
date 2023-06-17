@@ -109,10 +109,7 @@ create table if not exists PUBLIC.EVENTS
     ENTITY_ID       BIGINT                            not null,
     EVENT_TIMESTAMP BIGINT                            not null,
     EVENT_TYPE      ENUM ('LIKE', 'REVIEW', 'FRIEND') not null,
-    EVENT_OPERATION ENUM ('REMOVE', 'ADD', 'UPDATE')  not null,
-    constraint FK_EVENTS_USER_ID
-        foreign key (USER_ID) references PUBLIC.USERS
-            on delete cascade on update cascade
+    EVENT_OPERATION ENUM ('REMOVE', 'ADD', 'UPDATE')  not null
 );
 
 create table if not exists PUBLIC.REVIEWS
