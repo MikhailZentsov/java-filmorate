@@ -21,8 +21,10 @@ import ru.yandex.practicum.filmorate.storage.ReviewStorage;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
 import java.time.LocalDate;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -573,5 +575,141 @@ class FilmorateApplicationTests {
         assertTrue(director.isPresent());
         directorStorage.removeDirector(director.get().getId());
         assertEquals(0, directorStorage.getDirectors().size());
+    }
+
+    @Test
+    void getPopularFilmsTest() {
+        userStorage.saveOne(userOne);
+        userStorage.saveOne(userTwo);
+
+        List<Film> emptyList = filmStorage.getPopularFilms(10L, null, null);
+
+        assertTrue(emptyList.isEmpty(),
+                "Список должен быть пуст");
+
+        Set<Genre> genresSet1 = new LinkedHashSet<>();
+        genresSet1.add(Genre.COMEDY);
+        genresSet1.add(Genre.ACTION);
+
+        Set<Genre> genresSet2 = new LinkedHashSet<>();
+        genresSet2.add(Genre.DRAMA);
+        genresSet2.add(Genre.THRILLER);
+
+        Set<Genre> genresSet3 = new LinkedHashSet<>();
+        genresSet3.add(Genre.CARTOON);
+        genresSet3.add(Genre.ACTION);
+        genresSet3.add(Genre.DOCUMENTARY);
+
+        filmOne.setGenres(genresSet1);
+        filmTwo.setGenres(genresSet2);
+        filmThree.setGenres(genresSet3);
+
+        filmStorage.saveOne(filmOne);
+        filmStorage.saveOne(filmTwo);
+        filmStorage.saveOne(filmThree);
+
+        filmStorage.createLike(1L, 1L, 2);
+        filmStorage.createLike(2L, 1L, 8);
+        filmStorage.createLike(2L, 2L, 6);
+        filmStorage.createLike(3L, 2L, 10);
+
+        List<Film> popularFilmWithoutFilter = filmStorage.getPopularFilms(10L, null, null);
+
+        assertThat(popularFilmWithoutFilter)
+                .isNotEmpty()
+                .hasSize(3)
+                .satisfies(list -> {
+                    assertThat(list.get(0)).hasFieldOrPropertyWithValue("id", 3L);
+                    assertThat(list.get(0)).hasFieldOrPropertyWithValue("name", "filmThree");
+                    assertThat(list.get(0)).hasFieldOrPropertyWithValue("description", "descriptionThree");
+                    assertThat(list.get(0)).hasFieldOrPropertyWithValue("releaseDate", LocalDate.of(2001, 4, 14));
+                    assertThat(list.get(0)).hasFieldOrPropertyWithValue("duration", 140);
+                    assertThat(list.get(0)).hasFieldOrPropertyWithValue("mpa", Mpa.PG);
+                    assertThat(list.get(0)).hasFieldOrPropertyWithValue("rate", 10.0);
+
+                    assertThat(list.get(1)).hasFieldOrPropertyWithValue("id", 2L);
+                    assertThat(list.get(1)).hasFieldOrPropertyWithValue("name", "filmTwo");
+                    assertThat(list.get(1)).hasFieldOrPropertyWithValue("description", "descriptionTwo");
+                    assertThat(list.get(1)).hasFieldOrPropertyWithValue("releaseDate", LocalDate.of(1977, 7, 7));
+                    assertThat(list.get(1)).hasFieldOrPropertyWithValue("duration", 200);
+                    assertThat(list.get(1)).hasFieldOrPropertyWithValue("mpa", Mpa.NC17);
+                    assertThat(list.get(1)).hasFieldOrPropertyWithValue("rate", 7.0);
+
+                    assertThat(list.get(2)).hasFieldOrPropertyWithValue("id", 1L);
+                    assertThat(list.get(2)).hasFieldOrPropertyWithValue("name", "filmOne");
+                    assertThat(list.get(2)).hasFieldOrPropertyWithValue("description", "descriptionOne");
+                    assertThat(list.get(2)).hasFieldOrPropertyWithValue("releaseDate", LocalDate.of(1949, 1, 1));
+                    assertThat(list.get(2)).hasFieldOrPropertyWithValue("duration", 100);
+                    assertThat(list.get(2)).hasFieldOrPropertyWithValue("mpa", Mpa.G);
+                    assertThat(list.get(2)).hasFieldOrPropertyWithValue("rate", 2.0);
+                });
+
+        popularFilmWithoutFilter = filmStorage.getPopularFilms(1L, null, null);
+
+        assertThat(popularFilmWithoutFilter)
+                .isNotEmpty()
+                .hasSize(1)
+                .satisfies(list -> {
+                    assertThat(list.get(0)).hasFieldOrPropertyWithValue("id", 3L);
+                    assertThat(list.get(0)).hasFieldOrPropertyWithValue("name", "filmThree");
+                    assertThat(list.get(0)).hasFieldOrPropertyWithValue("description", "descriptionThree");
+                    assertThat(list.get(0)).hasFieldOrPropertyWithValue("releaseDate", LocalDate.of(2001, 4, 14));
+                    assertThat(list.get(0)).hasFieldOrPropertyWithValue("duration", 140);
+                    assertThat(list.get(0)).hasFieldOrPropertyWithValue("mpa", Mpa.PG);
+                    assertThat(list.get(0)).hasFieldOrPropertyWithValue("rate", 10.0);
+                });
+
+        List<Film> popularFilmWithGenreFilter2 = filmStorage.getPopularFilms(10L, 2, null);
+
+        assertThat(popularFilmWithGenreFilter2)
+                .isNotEmpty()
+                .hasSize(1)
+                .satisfies(list -> {
+                    assertThat(list.get(0)).hasFieldOrPropertyWithValue("id", 2L);
+                    assertThat(list.get(0)).hasFieldOrPropertyWithValue("name", "filmTwo");
+                    assertThat(list.get(0)).hasFieldOrPropertyWithValue("description", "descriptionTwo");
+                    assertThat(list.get(0)).hasFieldOrPropertyWithValue("releaseDate", LocalDate.of(1977, 7, 7));
+                    assertThat(list.get(0)).hasFieldOrPropertyWithValue("duration", 200);
+                    assertThat(list.get(0)).hasFieldOrPropertyWithValue("mpa", Mpa.NC17);
+                    assertThat(list.get(0)).hasFieldOrPropertyWithValue("rate", 7.0);
+                });
+
+        List<Film> popularFilmWithGenreFilter6 = filmStorage.getPopularFilms(10L, 6, null);
+
+        assertThat(popularFilmWithGenreFilter6)
+                .isNotEmpty()
+                .hasSize(2)
+                .satisfies(list -> {
+                    assertThat(list.get(0)).hasFieldOrPropertyWithValue("id", 3L);
+                    assertThat(list.get(0)).hasFieldOrPropertyWithValue("name", "filmThree");
+                    assertThat(list.get(0)).hasFieldOrPropertyWithValue("description", "descriptionThree");
+                    assertThat(list.get(0)).hasFieldOrPropertyWithValue("releaseDate", LocalDate.of(2001, 4, 14));
+                    assertThat(list.get(0)).hasFieldOrPropertyWithValue("duration", 140);
+                    assertThat(list.get(0)).hasFieldOrPropertyWithValue("mpa", Mpa.PG);
+                    assertThat(list.get(0)).hasFieldOrPropertyWithValue("rate", 10.0);
+
+                    assertThat(list.get(1)).hasFieldOrPropertyWithValue("id", 1L);
+                    assertThat(list.get(1)).hasFieldOrPropertyWithValue("name", "filmOne");
+                    assertThat(list.get(1)).hasFieldOrPropertyWithValue("description", "descriptionOne");
+                    assertThat(list.get(1)).hasFieldOrPropertyWithValue("releaseDate", LocalDate.of(1949, 1, 1));
+                    assertThat(list.get(1)).hasFieldOrPropertyWithValue("duration", 100);
+                    assertThat(list.get(1)).hasFieldOrPropertyWithValue("mpa", Mpa.G);
+                    assertThat(list.get(1)).hasFieldOrPropertyWithValue("rate", 2.0);
+                });
+
+        List<Film> popularFilmWithYearFilter2001 = filmStorage.getPopularFilms(10L, null, 2001);
+
+        assertThat(popularFilmWithYearFilter2001)
+                .isNotEmpty()
+                .hasSize(1)
+                .satisfies(list -> {
+                    assertThat(list.get(0)).hasFieldOrPropertyWithValue("id", 3L);
+                    assertThat(list.get(0)).hasFieldOrPropertyWithValue("name", "filmThree");
+                    assertThat(list.get(0)).hasFieldOrPropertyWithValue("description", "descriptionThree");
+                    assertThat(list.get(0)).hasFieldOrPropertyWithValue("releaseDate", LocalDate.of(2001, 4, 14));
+                    assertThat(list.get(0)).hasFieldOrPropertyWithValue("duration", 140);
+                    assertThat(list.get(0)).hasFieldOrPropertyWithValue("mpa", Mpa.PG);
+                    assertThat(list.get(0)).hasFieldOrPropertyWithValue("rate", 10.0);
+                });
     }
 }

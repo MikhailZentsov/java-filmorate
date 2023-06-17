@@ -201,11 +201,13 @@ public class DbFilmStorageImpl implements FilmStorage {
                 "select F.FILM_ID " +
                 "from FILMS F " +
                 "       left join GENRES_FILMS GF on F.FILM_ID = GF.FILM_ID " +
-                "where ((:filtered_by_genre and GENRE_ID = :genre_id) " +
-                "   or " +
-                "       (:filtered_by_year and EXTRACT(YEAR FROM F.RELEASE_DATE) = :year) " +
-                "   or " +
-                "       not (:filtered_by_genre or :filtered_by_year))" +
+                "where case when :filtered_by_genre then " +
+                "           GENRE_ID = :genre_id and GENRE_ID is not null" +
+                "       else true end" +
+                "   and " +
+                "       case when :filtered_by_year then " +
+                "           EXTRACT(YEAR FROM F.RELEASE_DATE) = :year and RELEASE_DATE is not null" +
+                "       else true end " +
                 ")" +
                 "select distinct FCTE.FILM_ID as id, " +
                 "       FILM_DESCRIPTION as description, " +
