@@ -83,7 +83,7 @@ public class FilmController {
                                                @ValuesAllowedConstraint(propName = "sortBy",
                                                        values = { "likes" , "title" })
                                                     @RequestParam("sortBy") String sort) {
-        return filmService.getFilmsByDirectorSortedBy(directorId, sort);
+        return filmService.getFilmsByDirectorOrderBy(directorId, sort);
     }
 
     @GetMapping("/common")

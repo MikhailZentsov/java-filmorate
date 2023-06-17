@@ -22,9 +22,7 @@ public interface FilmStorage {
 
     List<Film> findFilmsByNameAndDirector(String query, List<String> by);
 
-    List<Film> getFilmsByDirectorSortedByYear(Long directorId);
-
-    List<Film> getFilmsByDirectorSortedByLikes(Long directorId);
+    List<Film> getFilmsByDirectorOrderdBy(Long directorId, String order);
 
     List<Film> getCommonFilms(Long userId, Long friendId);
 

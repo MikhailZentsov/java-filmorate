@@ -101,19 +101,10 @@ public class DbFilmServiceImpl implements FilmService {
     }
 
     @Override
-    public List<Film> getFilmsByDirectorSortedBy(Long directorId, String sort) {
+    public List<Film> getFilmsByDirectorOrderBy(Long directorId, String order) {
         directorService.getDirector(directorId);
 
-        if (sort.equals("likes")) {
-            log.info("Получения фильмов режиссера с сортировкой по лайкам.");
-            return filmStorage.getFilmsByDirectorSortedByLikes(directorId);
-        } else if (sort.equals("year")) {
-            log.info("Получения фильмов режиссера с сортировкой по году.");
-            return filmStorage.getFilmsByDirectorSortedByYear(directorId);
-        } else {
-            log.info("Параметр sort = {}. Должен быть либо likes, либо year", sort);
-            return new ArrayList<>();
-        }
+        return filmStorage.getFilmsByDirectorOrderdBy(directorId, order);
     }
 
     @Override

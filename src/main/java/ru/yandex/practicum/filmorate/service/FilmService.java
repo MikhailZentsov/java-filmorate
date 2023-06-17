@@ -22,7 +22,7 @@ public interface FilmService {
 
     List<Film> getFilmsWithQueryByTitleAndDirector(String query, List<String> by);
 
-    List<Film> getFilmsByDirectorSortedBy(Long directorId, String sort);
+    List<Film> getFilmsByDirectorOrderBy(Long directorId, String order);
 
     List<Film> getCommonFilms(Long userId, Long friendId);
 

@@ -329,39 +329,17 @@ public class DbFilmStorageImpl implements FilmStorage {
 
     @Override
     @Transactional
-    public List<Film> getFilmsByDirectorSortedByYear(Long directorId) {
-        String sqlQueryGetDirectorFilmsSortedByLike =
-                "select f.FILM_ID as id," +
-                "    f.FILM_NAME as name," +
-                "    f.FILM_DESCRIPTION as description, " +
-                "    R.RATING_NAME as mpa," +
-                "    F.RELEASE_DATE as releaseDate," +
-                "    F.DURATION as duration," +
-                "    RATE as rate " +
-                "from PUBLIC.FILMS f " +
-                "    join PUBLIC.DIRECTORS_FILMS df on f.FILM_ID = df.FILM_ID " +
-                "    left join PUBLIC.RATINGS R on R.RATING_ID = f.RATING_ID " +
-                "    left join FILMS_RATE FR on f.FILM_ID = FR.FILM_ID " +
-                "where df.DIRECTOR_ID = ? " +
-                "order by EXTRACT(year from f.RELEASE_DATE)";
-
-        List<Film> films = jdbcTemplate.query(sqlQueryGetDirectorFilmsSortedByLike, FilmMapper::mapRowToFilm, directorId);
-
-        log.info("Получен список фильмов с режиссером ID = {} и отсортированных по году.", directorId);
-
-        if (!films.isEmpty()) {
-            Map<Long, Film> mapFilms = films.stream().collect(Collectors.toMap(Film::getId, Function.identity()));
-
-            setGenresToMapFilms(mapFilms, jdbcTemplate);
-            setDirectorsToMapFilms(mapFilms, jdbcTemplate);
+    public List<Film> getFilmsByDirectorOrderdBy(Long directorId, String order) {
+        Map<String, Object> params = new HashMap<>();
+        params.put("director_id", directorId);
+        if (order.equals("likes")) {
+            params.put("order", 1);
+        } else if (order.equals("title")) {
+            params.put("order", 2);
+        } else {
+            params.put("order", 3);
         }
 
-        return films;
-    }
-
-    @Override
-    @Transactional
-    public List<Film> getFilmsByDirectorSortedByLikes(Long directorId) {
         String sqlQueryGetDirectorFilmsSortedByLike =
                 "select f.FILM_ID as id," +
                 "    f.FILM_NAME as name," +
@@ -375,10 +353,13 @@ public class DbFilmStorageImpl implements FilmStorage {
                 "   left join PUBLIC.RATINGS R on R.RATING_ID = f.RATING_ID " +
                 "   left join LIKES_FILMS LF on f.FILM_ID = LF.FILM_ID " +
                 "   left join FILMS_RATE FR on f.FILM_ID = FR.FILM_ID " +
-                "where df.DIRECTOR_ID = ? " +
-                "order by rate desc";
+                "where df.DIRECTOR_ID = :director_id " +
+                "order by case when :order = 1 then rate end desc," +
+                        "case when :order = 2 then EXTRACT(year from f.RELEASE_DATE) end ";
 
-        List<Film> films = jdbcTemplate.query(sqlQueryGetDirectorFilmsSortedByLike, FilmMapper::mapRowToFilm, directorId);
+        List<Film> films = namedParameterJdbcTemplate.query(sqlQueryGetDirectorFilmsSortedByLike,
+                new MapSqlParameterSource(params),
+                FilmMapper::mapRowToFilm);
 
         log.info("Получен список фильмов с режиссером ID = {} и отсортированных по лайкам.", directorId);
 
