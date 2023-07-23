@@ -134,5 +134,5 @@
 5. _add-remove-endpoint_ - Функциональность для удаления фильма и пользователя по идентификатору - [ymolyavkin](https://github.com/ymolyavkin)
 
 
-Схема базы данных:
+#### Схема базы данных:
 ![filmorate.png](/src/main/resources/images/filmorate.png)
