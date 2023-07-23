@@ -13,6 +13,7 @@ import java.util.Map;
 
 @RestControllerAdvice
 public class ErrorHandler {
+
     @ExceptionHandler({NotFoundException.class})
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public Map<String, String> handleNotFound(final RuntimeException e) {
