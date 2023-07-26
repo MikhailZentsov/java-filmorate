@@ -2,7 +2,6 @@
 
 Технологии: Java + Spring Boot + Maven + JUnit + RESTful API + JDBC
 
-
 ![image](https://github.com/MikhailZentsov/java-filmorate/assets/118910569/214a1c2c-eaf6-4650-9169-9be436409403)
 
 
