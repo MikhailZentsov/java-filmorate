@@ -8,21 +8,28 @@ import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabas
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.DirtiesContext;
 import ru.yandex.practicum.filmorate.model.Director;
+import ru.yandex.practicum.filmorate.model.Event;
+import ru.yandex.practicum.filmorate.model.EventOperation;
+import ru.yandex.practicum.filmorate.model.EventType;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.Mpa;
 import ru.yandex.practicum.filmorate.model.Review;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.DirectorStorage;
+import ru.yandex.practicum.filmorate.storage.EventStorage;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.GenreStorage;
 import ru.yandex.practicum.filmorate.storage.MpaStorage;
 import ru.yandex.practicum.filmorate.storage.ReviewStorage;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
+import java.time.Instant;
 import java.time.LocalDate;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -39,6 +46,7 @@ class FilmorateApplicationTests {
     private final MpaStorage mpaStorage;
     private final ReviewStorage reviewStorage;
     private final DirectorStorage directorStorage;
+    private final EventStorage eventStorage;
 
     private static User userOne;
     private static User userTwo;
@@ -51,6 +59,13 @@ class FilmorateApplicationTests {
     private static Director directorOne;
 
     private static Director directorTwo;
+    private static Event eventOne;
+    private static Event eventTwo;
+    private static Event eventThree;
+    private static Event eventFour;
+    private static Event eventFive;
+    private static Event eventSix;
+    private static Event eventSeven;
 
     @BeforeEach
     void setUp() {
@@ -122,6 +137,62 @@ class FilmorateApplicationTests {
         directorTwo = new Director.Builder()
                 .id(0)
                 .name("directorTwo")
+                .build();
+        eventOne = new Event.Builder()
+                .eventId(1L)
+                .userId(1L)
+                .timestamp(Instant.now().toEpochMilli())
+                .entityId(2L)
+                .eventType(EventType.FRIEND)
+                .eventOperation(EventOperation.ADD)
+                .build();
+        eventTwo = new Event.Builder()
+                .eventId(1L)
+                .userId(1L)
+                .timestamp(Instant.now().toEpochMilli())
+                .entityId(2L)
+                .eventType(EventType.FRIEND)
+                .eventOperation(EventOperation.REMOVE)
+                .build();
+        eventThree = new Event.Builder()
+                .eventId(1L)
+                .userId(1L)
+                .timestamp(Instant.now().toEpochMilli())
+                .entityId(1L)
+                .eventType(EventType.LIKE)
+                .eventOperation(EventOperation.ADD)
+                .build();
+        eventFour = new Event.Builder()
+                .eventId(1L)
+                .userId(1L)
+                .timestamp(Instant.now().toEpochMilli())
+                .entityId(1L)
+                .eventType(EventType.LIKE)
+                .eventOperation(EventOperation.REMOVE)
+                .build();
+        eventFive = new Event.Builder()
+                .eventId(1L)
+                .userId(1L)
+                .timestamp(Instant.now().toEpochMilli())
+                .entityId(1L)
+                .eventType(EventType.REVIEW)
+                .eventOperation(EventOperation.ADD)
+                .build();
+        eventSix = new Event.Builder()
+                .eventId(1L)
+                .userId(1L)
+                .timestamp(Instant.now().toEpochMilli())
+                .entityId(1L)
+                .eventType(EventType.REVIEW)
+                .eventOperation(EventOperation.UPDATE)
+                .build();
+        eventSeven = new Event.Builder()
+                .eventId(1L)
+                .userId(1L)
+                .timestamp(Instant.now().toEpochMilli())
+                .entityId(1L)
+                .eventType(EventType.REVIEW)
+                .eventOperation(EventOperation.REMOVE)
                 .build();
     }
 
@@ -421,21 +492,21 @@ class FilmorateApplicationTests {
         filmStorage.saveOne(filmOne);
         filmStorage.saveOne(filmTwo);
         filmStorage.saveOne(filmThree);
-        filmStorage.creatLike(1L, 2L);
+        filmStorage.createLike(1L, 2L, 1);
 
         List<Film> emptyCommonFilms = filmStorage.getCommonFilms(1L, 2L);
 
         assertTrue(emptyCommonFilms.isEmpty());
 
-        filmStorage.creatLike(1L, 1L);
+        filmStorage.createLike(1L, 1L, 1);
         List<Film> commonFilm = filmStorage.getCommonFilms(1L, 2L);
 
         assertEquals(filmOne, commonFilm.get(0));
 
-        filmStorage.creatLike(2L, 3L);
-        filmStorage.creatLike(2L, 1L);
-        filmStorage.creatLike(2L, 2L);
-        filmStorage.creatLike(3L, 1L);
+        filmStorage.createLike(2L, 3L, 1);
+        filmStorage.createLike(2L, 1L, 1);
+        filmStorage.createLike(2L, 2L, 1);
+        filmStorage.createLike(3L, 1L, 1);
 
         List<Film> commonFilms = filmStorage.getCommonFilms(1L, 2L);
 
@@ -453,16 +524,27 @@ class FilmorateApplicationTests {
         filmOne.setName("Some new film");
         filmStorage.saveOne(filmOne);
 
-        List<Film> emptyListFilms = userStorage.findRecommendationsFilms(1L);
+        List<Film> emptyListFilms = filmStorage.findRecommendationsFilms(1L);
 
-        assertTrue(emptyListFilms.isEmpty());
+        assertTrue(emptyListFilms.isEmpty(),
+                "Список должен быть пуст");
 
-        filmStorage.creatLike(1L, 1L);
-        filmStorage.creatLike(2L, 1L);
-        filmStorage.creatLike(1L, 2L);
-        filmStorage.creatLike(3L, 2L);
+        filmStorage.createLike(1L, 1L, 1);
+        filmStorage.createLike(2L, 1L, 1);
+        filmStorage.createLike(1L, 2L, 1);
+        filmStorage.createLike(3L, 2L, 1);
 
-        List<Film> oneFilmRecommended = userStorage.findRecommendationsFilms(1L);
+        List<Film> emptyAnotherListFilms = filmStorage.findRecommendationsFilms(1L);
+
+        assertTrue(emptyAnotherListFilms.isEmpty(),
+                "Список должен быть пуст");
+
+        filmStorage.createLike(1L, 1L, 8);
+        filmStorage.createLike(2L, 1L, 8);
+        filmStorage.createLike(1L, 2L, 8);
+        filmStorage.createLike(3L, 2L, 8);
+
+        List<Film> oneFilmRecommended = filmStorage.findRecommendationsFilms(1L);
 
         assertThat(oneFilmRecommended)
                 .hasSize(1);
@@ -471,11 +553,12 @@ class FilmorateApplicationTests {
                 .hasFieldOrPropertyWithValue("name", "Some new film")
                 .hasFieldOrPropertyWithValue("releaseDate", LocalDate.of(1949, 1, 1))
                 .hasFieldOrPropertyWithValue("duration", 100)
-                .hasFieldOrPropertyWithValue("mpa", Mpa.G);
+                .hasFieldOrPropertyWithValue("mpa", Mpa.G)
+                .hasFieldOrPropertyWithValue("rate", 8.0);
 
-        filmStorage.creatLike(3L, 1L);
+        filmStorage.createLike(3L, 1L, 6);
 
-        List<Film> emptyListFilmsAfterLike = userStorage.findRecommendationsFilms(1L);
+        List<Film> emptyListFilmsAfterLike = filmStorage.findRecommendationsFilms(1L);
 
         assertTrue(emptyListFilmsAfterLike.isEmpty());
     }
@@ -561,5 +644,211 @@ class FilmorateApplicationTests {
         assertTrue(director.isPresent());
         directorStorage.removeDirector(director.get().getId());
         assertEquals(0, directorStorage.getDirectors().size());
+    }
+
+    @Test
+    void getPopularFilmsTest() {
+        userStorage.saveOne(userOne);
+        userStorage.saveOne(userTwo);
+
+        List<Film> emptyList = filmStorage.getPopularFilms(10L, null, null);
+
+        assertTrue(emptyList.isEmpty(),
+                "Список должен быть пуст");
+
+        Set<Genre> genresSet1 = new LinkedHashSet<>();
+        genresSet1.add(Genre.COMEDY);
+        genresSet1.add(Genre.ACTION);
+
+        Set<Genre> genresSet2 = new LinkedHashSet<>();
+        genresSet2.add(Genre.DRAMA);
+        genresSet2.add(Genre.THRILLER);
+
+        Set<Genre> genresSet3 = new LinkedHashSet<>();
+        genresSet3.add(Genre.CARTOON);
+        genresSet3.add(Genre.ACTION);
+        genresSet3.add(Genre.DOCUMENTARY);
+
+        filmOne.setGenres(genresSet1);
+        filmTwo.setGenres(genresSet2);
+        filmThree.setGenres(genresSet3);
+
+        filmStorage.saveOne(filmOne);
+        filmStorage.saveOne(filmTwo);
+        filmStorage.saveOne(filmThree);
+
+        filmStorage.createLike(1L, 1L, 2);
+        filmStorage.createLike(2L, 1L, 8);
+        filmStorage.createLike(2L, 2L, 6);
+        filmStorage.createLike(3L, 2L, 10);
+
+        List<Film> popularFilmWithoutFilter = filmStorage.getPopularFilms(10L, null, null);
+
+        assertThat(popularFilmWithoutFilter)
+                .isNotEmpty()
+                .hasSize(3)
+                .satisfies(list -> {
+                    assertThat(list.get(0)).hasFieldOrPropertyWithValue("id", 3L);
+                    assertThat(list.get(0)).hasFieldOrPropertyWithValue("name", "filmThree");
+                    assertThat(list.get(0)).hasFieldOrPropertyWithValue("description", "descriptionThree");
+                    assertThat(list.get(0)).hasFieldOrPropertyWithValue("releaseDate", LocalDate.of(2001, 4, 14));
+                    assertThat(list.get(0)).hasFieldOrPropertyWithValue("duration", 140);
+                    assertThat(list.get(0)).hasFieldOrPropertyWithValue("mpa", Mpa.PG);
+                    assertThat(list.get(0)).hasFieldOrPropertyWithValue("rate", 10.0);
+
+                    assertThat(list.get(1)).hasFieldOrPropertyWithValue("id", 2L);
+                    assertThat(list.get(1)).hasFieldOrPropertyWithValue("name", "filmTwo");
+                    assertThat(list.get(1)).hasFieldOrPropertyWithValue("description", "descriptionTwo");
+                    assertThat(list.get(1)).hasFieldOrPropertyWithValue("releaseDate", LocalDate.of(1977, 7, 7));
+                    assertThat(list.get(1)).hasFieldOrPropertyWithValue("duration", 200);
+                    assertThat(list.get(1)).hasFieldOrPropertyWithValue("mpa", Mpa.NC17);
+                    assertThat(list.get(1)).hasFieldOrPropertyWithValue("rate", 7.0);
+
+                    assertThat(list.get(2)).hasFieldOrPropertyWithValue("id", 1L);
+                    assertThat(list.get(2)).hasFieldOrPropertyWithValue("name", "filmOne");
+                    assertThat(list.get(2)).hasFieldOrPropertyWithValue("description", "descriptionOne");
+                    assertThat(list.get(2)).hasFieldOrPropertyWithValue("releaseDate", LocalDate.of(1949, 1, 1));
+                    assertThat(list.get(2)).hasFieldOrPropertyWithValue("duration", 100);
+                    assertThat(list.get(2)).hasFieldOrPropertyWithValue("mpa", Mpa.G);
+                    assertThat(list.get(2)).hasFieldOrPropertyWithValue("rate", 2.0);
+                });
+
+        popularFilmWithoutFilter = filmStorage.getPopularFilms(1L, null, null);
+
+        assertThat(popularFilmWithoutFilter)
+                .isNotEmpty()
+                .hasSize(1)
+                .satisfies(list -> {
+                    assertThat(list.get(0)).hasFieldOrPropertyWithValue("id", 3L);
+                    assertThat(list.get(0)).hasFieldOrPropertyWithValue("name", "filmThree");
+                    assertThat(list.get(0)).hasFieldOrPropertyWithValue("description", "descriptionThree");
+                    assertThat(list.get(0)).hasFieldOrPropertyWithValue("releaseDate", LocalDate.of(2001, 4, 14));
+                    assertThat(list.get(0)).hasFieldOrPropertyWithValue("duration", 140);
+                    assertThat(list.get(0)).hasFieldOrPropertyWithValue("mpa", Mpa.PG);
+                    assertThat(list.get(0)).hasFieldOrPropertyWithValue("rate", 10.0);
+                });
+
+        List<Film> popularFilmWithGenreFilter2 = filmStorage.getPopularFilms(10L, 2, null);
+
+        assertThat(popularFilmWithGenreFilter2)
+                .isNotEmpty()
+                .hasSize(1)
+                .satisfies(list -> {
+                    assertThat(list.get(0)).hasFieldOrPropertyWithValue("id", 2L);
+                    assertThat(list.get(0)).hasFieldOrPropertyWithValue("name", "filmTwo");
+                    assertThat(list.get(0)).hasFieldOrPropertyWithValue("description", "descriptionTwo");
+                    assertThat(list.get(0)).hasFieldOrPropertyWithValue("releaseDate", LocalDate.of(1977, 7, 7));
+                    assertThat(list.get(0)).hasFieldOrPropertyWithValue("duration", 200);
+                    assertThat(list.get(0)).hasFieldOrPropertyWithValue("mpa", Mpa.NC17);
+                    assertThat(list.get(0)).hasFieldOrPropertyWithValue("rate", 7.0);
+                });
+
+        List<Film> popularFilmWithGenreFilter6 = filmStorage.getPopularFilms(10L, 6, null);
+
+        assertThat(popularFilmWithGenreFilter6)
+                .isNotEmpty()
+                .hasSize(2)
+                .satisfies(list -> {
+                    assertThat(list.get(0)).hasFieldOrPropertyWithValue("id", 3L);
+                    assertThat(list.get(0)).hasFieldOrPropertyWithValue("name", "filmThree");
+                    assertThat(list.get(0)).hasFieldOrPropertyWithValue("description", "descriptionThree");
+                    assertThat(list.get(0)).hasFieldOrPropertyWithValue("releaseDate", LocalDate.of(2001, 4, 14));
+                    assertThat(list.get(0)).hasFieldOrPropertyWithValue("duration", 140);
+                    assertThat(list.get(0)).hasFieldOrPropertyWithValue("mpa", Mpa.PG);
+                    assertThat(list.get(0)).hasFieldOrPropertyWithValue("rate", 10.0);
+
+                    assertThat(list.get(1)).hasFieldOrPropertyWithValue("id", 1L);
+                    assertThat(list.get(1)).hasFieldOrPropertyWithValue("name", "filmOne");
+                    assertThat(list.get(1)).hasFieldOrPropertyWithValue("description", "descriptionOne");
+                    assertThat(list.get(1)).hasFieldOrPropertyWithValue("releaseDate", LocalDate.of(1949, 1, 1));
+                    assertThat(list.get(1)).hasFieldOrPropertyWithValue("duration", 100);
+                    assertThat(list.get(1)).hasFieldOrPropertyWithValue("mpa", Mpa.G);
+                    assertThat(list.get(1)).hasFieldOrPropertyWithValue("rate", 2.0);
+                });
+
+        List<Film> popularFilmWithYearFilter2001 = filmStorage.getPopularFilms(10L, null, 2001);
+
+        assertThat(popularFilmWithYearFilter2001)
+                .isNotEmpty()
+                .hasSize(1)
+                .satisfies(list -> {
+                    assertThat(list.get(0)).hasFieldOrPropertyWithValue("id", 3L);
+                    assertThat(list.get(0)).hasFieldOrPropertyWithValue("name", "filmThree");
+                    assertThat(list.get(0)).hasFieldOrPropertyWithValue("description", "descriptionThree");
+                    assertThat(list.get(0)).hasFieldOrPropertyWithValue("releaseDate", LocalDate.of(2001, 4, 14));
+                    assertThat(list.get(0)).hasFieldOrPropertyWithValue("duration", 140);
+                    assertThat(list.get(0)).hasFieldOrPropertyWithValue("mpa", Mpa.PG);
+                    assertThat(list.get(0)).hasFieldOrPropertyWithValue("rate", 10.0);
+                });
+    }
+
+    @Test
+    void eventsTest() {
+        userStorage.saveOne(userOne);
+        userStorage.saveOne(userTwo);
+        filmStorage.saveOne(filmOne);
+        filmStorage.saveOne(filmTwo);
+
+        List<Event> emptyList = eventStorage.findAllById(1L);
+
+        assertTrue(emptyList.isEmpty(),
+                "Список должен быть пуст");
+
+        eventStorage.saveOne(eventOne);
+        eventStorage.saveOne(eventTwo);
+        eventStorage.saveOne(eventThree);
+        eventStorage.saveOne(eventFour);
+        eventStorage.saveOne(eventFive);
+        eventStorage.saveOne(eventSix);
+        eventStorage.saveOne(eventSeven);
+
+        List<Event> eventsUser1 = eventStorage.findAllById(1L);
+
+        assertThat(eventsUser1)
+                .isNotEmpty()
+                .hasSize(7)
+                .satisfies(list -> {
+                    assertThat(list.get(0)).hasFieldOrPropertyWithValue("eventId", 1L);
+                    assertThat(list.get(0)).hasFieldOrPropertyWithValue("userId", 1L);
+                    assertThat(list.get(0)).hasFieldOrPropertyWithValue("entityId", 2L);
+                    assertThat(list.get(0)).hasFieldOrPropertyWithValue("eventType", EventType.FRIEND);
+                    assertThat(list.get(0)).hasFieldOrPropertyWithValue("operation", EventOperation.ADD);
+
+                    assertThat(list.get(1)).hasFieldOrPropertyWithValue("eventId", 2L);
+                    assertThat(list.get(1)).hasFieldOrPropertyWithValue("userId", 1L);
+                    assertThat(list.get(1)).hasFieldOrPropertyWithValue("entityId", 2L);
+                    assertThat(list.get(1)).hasFieldOrPropertyWithValue("eventType", EventType.FRIEND);
+                    assertThat(list.get(1)).hasFieldOrPropertyWithValue("operation", EventOperation.REMOVE);
+
+                    assertThat(list.get(2)).hasFieldOrPropertyWithValue("eventId", 3L);
+                    assertThat(list.get(2)).hasFieldOrPropertyWithValue("userId", 1L);
+                    assertThat(list.get(2)).hasFieldOrPropertyWithValue("entityId", 1L);
+                    assertThat(list.get(2)).hasFieldOrPropertyWithValue("eventType", EventType.LIKE);
+                    assertThat(list.get(2)).hasFieldOrPropertyWithValue("operation", EventOperation.ADD);
+
+                    assertThat(list.get(3)).hasFieldOrPropertyWithValue("eventId", 4L);
+                    assertThat(list.get(3)).hasFieldOrPropertyWithValue("userId", 1L);
+                    assertThat(list.get(3)).hasFieldOrPropertyWithValue("entityId", 1L);
+                    assertThat(list.get(3)).hasFieldOrPropertyWithValue("eventType", EventType.LIKE);
+                    assertThat(list.get(3)).hasFieldOrPropertyWithValue("operation", EventOperation.REMOVE);
+
+                    assertThat(list.get(4)).hasFieldOrPropertyWithValue("eventId", 5L);
+                    assertThat(list.get(4)).hasFieldOrPropertyWithValue("userId", 1L);
+                    assertThat(list.get(4)).hasFieldOrPropertyWithValue("entityId", 1L);
+                    assertThat(list.get(4)).hasFieldOrPropertyWithValue("eventType", EventType.REVIEW);
+                    assertThat(list.get(4)).hasFieldOrPropertyWithValue("operation", EventOperation.ADD);
+
+                    assertThat(list.get(5)).hasFieldOrPropertyWithValue("eventId", 6L);
+                    assertThat(list.get(5)).hasFieldOrPropertyWithValue("userId", 1L);
+                    assertThat(list.get(5)).hasFieldOrPropertyWithValue("entityId", 1L);
+                    assertThat(list.get(5)).hasFieldOrPropertyWithValue("eventType", EventType.REVIEW);
+                    assertThat(list.get(5)).hasFieldOrPropertyWithValue("operation", EventOperation.UPDATE);
+
+                    assertThat(list.get(6)).hasFieldOrPropertyWithValue("eventId", 7L);
+                    assertThat(list.get(6)).hasFieldOrPropertyWithValue("userId", 1L);
+                    assertThat(list.get(6)).hasFieldOrPropertyWithValue("entityId", 1L);
+                    assertThat(list.get(6)).hasFieldOrPropertyWithValue("eventType", EventType.REVIEW);
+                    assertThat(list.get(6)).hasFieldOrPropertyWithValue("operation", EventOperation.REMOVE);
+                });
     }
 }

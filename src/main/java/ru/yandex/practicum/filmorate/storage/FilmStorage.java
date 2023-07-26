@@ -14,25 +14,19 @@ public interface FilmStorage {
 
     Optional<Film> updateOne(Film film);
 
-    List<Film> getPopularFilms(Long count);
+    List<Film> getPopularFilms(Long count, Integer genreId, Integer year);
 
-    List<Film> getPopularFilms(Long count, Integer genreId);
-
-    List<Film> getPopularFilms(Long count, String year);
-
-    List<Film> getPopularFilms(Long count, Integer genreId, String year);
-
-    void creatLike(Long idFilm, Long idUser);
+    void createLike(Long idFilm, Long idUser, Integer rate);
 
     void removeLike(Long idFilm, Long idUser);
 
     List<Film> findFilmsByNameAndDirector(String query, List<String> by);
 
-    List<Film> getFilmsByDirectorSortedByYear(Long directorId);
-
-    List<Film> getFilmsByDirectorSortedByLikes(Long directorId);
+    List<Film> getFilmsByDirectorOrderdBy(Long directorId, String order);
 
     List<Film> getCommonFilms(Long userId, Long friendId);
 
     Optional<Boolean> deleteFilmById(long filmId);
+
+    List<Film> findRecommendationsFilms(Long userId);
 }

@@ -6,7 +6,6 @@ import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.AlreadyExistsException;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Event;
-import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.EventService;
 import ru.yandex.practicum.filmorate.service.UserService;
@@ -109,15 +108,6 @@ public class DbUserServiceImpl implements UserService {
                         "Пользователь с ID %s не найден", id)));
 
         return eventService.findEventsByUserId(id);
-    }
-
-    @Override
-    public List<Film> getRecommendations(Long userId) {
-        userStorage.getById(userId).orElseThrow(() ->
-                new NotFoundException(String.format(
-                        "Пользователь с ID %s не найден", userId)));
-
-        return userStorage.findRecommendationsFilms(userId);
     }
 
     private User normalizeNameUser(User user) {

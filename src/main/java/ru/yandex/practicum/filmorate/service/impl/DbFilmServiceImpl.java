@@ -50,24 +50,13 @@ public class DbFilmServiceImpl implements FilmService {
     }
 
     @Override
-    public List<Film> getTopFilms(Long count, Integer genreId, String year) {
-        if (genreId != null && year != null) {
-            log.info("Получение фильмов с отбором по жанру и году.");
-            return filmStorage.getPopularFilms(count, genreId, year);
-        } else if (genreId == null && year == null) {
-            log.info("Получение фильмов без отбора.");
-            return filmStorage.getPopularFilms(count);
-        } else if (genreId != null) {
-            log.info("Получение фильмов с отбором по жанру.");
-            return filmStorage.getPopularFilms(count, genreId);
-        } else {
-            log.info("Получение  с отбором по году");
-            return filmStorage.getPopularFilms(count, year);
-        }
+    public List<Film> getPopularFilms(Long count, Integer genreId, Integer year) {
+        log.info("Получение популярных фильмов с отбором");
+        return filmStorage.getPopularFilms(count, genreId, year);
     }
 
     @Override
-    public void addLike(Long idFilm, Long idUser) {
+    public void addLike(Long idFilm, Long idUser, Integer rate) {
         userStorage.getById(idUser).orElseThrow(() ->
                 new NotFoundException(String.format(
                         "Пользователь с ID %s не найден", idUser)));
@@ -75,7 +64,7 @@ public class DbFilmServiceImpl implements FilmService {
                 new NotFoundException(String.format(
                         "Фильм с ID %s не найден", idFilm)));
 
-        filmStorage.creatLike(idFilm, idUser);
+        filmStorage.createLike(idFilm, idUser, rate);
         eventService.createAddLikeEvent(idUser, idFilm);
     }
 
@@ -112,19 +101,19 @@ public class DbFilmServiceImpl implements FilmService {
     }
 
     @Override
-    public List<Film> getFilmsByDirectorSortedBy(Long directorId, String sort) {
+    public List<Film> getFilmsByDirectorOrderBy(Long directorId, String order) {
         directorService.getDirector(directorId);
 
-        if (sort.equals("likes")) {
-            log.info("Получения фильмов режиссера с сортировкой по лайкам.");
-            return filmStorage.getFilmsByDirectorSortedByLikes(directorId);
-        } else if (sort.equals("year")) {
-            log.info("Получения фильмов режиссера с сортировкой по году.");
-            return filmStorage.getFilmsByDirectorSortedByYear(directorId);
-        } else {
-            log.info("Параметр sort = {}. Должен быть либо likes, либо year", sort);
-            throw new ValidationParamsException("Параметр sort должен быть либо likes, либо year");
-        }
+        return filmStorage.getFilmsByDirectorOrderdBy(directorId, order);
+    }
+
+    @Override
+    public List<Film> getRecommendations(Long userId) {
+        userStorage.getById(userId).orElseThrow(() ->
+                new NotFoundException(String.format(
+                        "Пользователь с ID %s не найден", userId)));
+
+        return filmStorage.findRecommendationsFilms(userId);
     }
 
     @Override

@@ -34,14 +34,15 @@ public class DbEventStorageImpl implements EventStorage {
     @Override
     @Transactional
     public List<Event> findAllById(Long idUser) {
-        String sqlQueryFindAllById = "select event_id, " +
-                "       user_id, " +
-                "       entity_id, " +
-                "       event_timestamp, " +
-                "       event_type, " +
-                "       event_operation " +
+        String sqlQueryFindAllById = "select EVENT_ID, " +
+                "       USER_ID, " +
+                "       ENTITY_ID, " +
+                "       EVENT_TIMESTAMP, " +
+                "       EVENT_TYPE, " +
+                "       EVENT_OPERATION " +
                 "from EVENTS " +
-                "where USER_ID = ?";
+                "where USER_ID = ? " +
+                "order by event_timestamp ";
 
         List<Event> events = jdbcTemplate.query(sqlQueryFindAllById, EventMapper::mapRowToEvent, idUser);
         log.info("Получен список событий пользователя с ID = {}", idUser);
